@@ -3,15 +3,15 @@ import 'package:flutter/material.dart';
 class StoreScreenshot extends StatelessWidget {
   const StoreScreenshot({
     super.key,
-    required this.locale,
+    this.locale,
     required this.builder,
     required this.size,
-    required this.platform,
+    this.platform,
   });
 
-  final Locale locale;
+  final Locale? locale;
   final Size size;
-  final TargetPlatform platform;
+  final TargetPlatform? platform;
 
   final Widget Function(BuildContext) builder;
 
