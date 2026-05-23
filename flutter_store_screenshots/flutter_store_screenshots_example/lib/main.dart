@@ -60,6 +60,19 @@ void main() {
           storeScreenshots: _tabletScreenshots(),
         ),
 
+        // ── Android Tablet 7" ────────────────────────────────────────────────
+        AndroidScreenshotSet.tablet7(
+          decorator: framedDecorator(
+            device: Devices.android.mediumTablet,
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFF006064), Color(0xFF4DD0E1)],
+            ),
+          ),
+          storeScreenshots: _tabletScreenshots(),
+        ),
+
         // ── Android Tablet 10" ───────────────────────────────────────────────
         AndroidScreenshotSet.tablet10(
           decorator: framedDecorator(
