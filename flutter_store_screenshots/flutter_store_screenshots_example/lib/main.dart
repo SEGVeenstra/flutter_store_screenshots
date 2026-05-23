@@ -104,6 +104,102 @@ void main() {
           ),
           storeScreenshots: _tabletScreenshots(),
         ),
+
+        // ── Google Play Feature Graphic ─────────────────────────────────────────────
+        ScreenshotSet(
+          name: 'Google Play Feature Graphic',
+          targetPlatform: TargetPlatform.android,
+          size: const Size(1024, 500),
+          pixelDensity: 1.0,
+          decorator: _featureGraphicDecorator,
+          storeScreenshots: [
+            StoreScreenshot(
+              titleBuilder: (ctx) =>
+                  AppLocalizations.of(ctx).screenshotFeatureTitle,
+              subtitleBuilder: (ctx) =>
+                  AppLocalizations.of(ctx).screenshotFeatureSubtitle,
+              builder: (_) => const HomeScreen(),
+            ),
+          ],
+        ),
+      ],
+    ),
+  );
+}
+
+/// Renders a Google Play Feature Graphic (1024×500 px landscape banner).
+///
+/// Branding and tagline are on the left; a small device mockup on the right.
+Widget _featureGraphicDecorator(
+  BuildContext context,
+  WidgetBuilder contentBuilder,
+  String? Function(BuildContext)? titleBuilder,
+  String? Function(BuildContext)? subtitleBuilder,
+) {
+  final l10n = AppLocalizations.of(context);
+  final title = titleBuilder?.call(context);
+  final subtitle = subtitleBuilder?.call(context);
+
+  return Container(
+    decoration: const BoxDecoration(
+      gradient: LinearGradient(
+        begin: Alignment.centerLeft,
+        end: Alignment.centerRight,
+        colors: [Color(0xFF1B5E20), Color(0xFF2E7D32)],
+      ),
+    ),
+    child: Row(
+      children: [
+        // ── Left: branding ────────────────────────────────────────────────
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 64),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.appName,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 60,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: -1,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                if (title != null)
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 30,
+                      height: 1.3,
+                    ),
+                  ),
+                if (subtitle != null) ...[
+                  const SizedBox(height: 12),
+                  Text(
+                    subtitle,
+                    style: const TextStyle(color: Colors.white70, fontSize: 18),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
+        // ── Right: device mockup ──────────────────────────────────────
+        SizedBox(
+          width: 240,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+            child: DeviceFrame(
+              device: Devices.android.samsungGalaxyS25,
+              screen: Builder(builder: contentBuilder),
+            ),
+          ),
+        ),
+        const SizedBox(width: 32),
       ],
     ),
   );

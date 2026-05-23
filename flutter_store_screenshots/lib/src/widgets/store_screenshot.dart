@@ -57,12 +57,14 @@ class ScreenshotRender extends StatelessWidget {
         child: Localizations.override(
           context: context,
           locale: locale,
-          child: SizedBox(
-            width: size.width,
-            height: size.height,
-            child: decorator != null
-                ? Builder(builder: (ctx) => decorator!(ctx, builder))
-                : Builder(builder: builder),
+          child: IgnorePointer(
+            child: SizedBox(
+              width: size.width,
+              height: size.height,
+              child: decorator != null
+                  ? Builder(builder: (ctx) => decorator!(ctx, builder))
+                  : Builder(builder: builder),
+            ),
           ),
         ),
       ),

@@ -97,6 +97,8 @@ class AppLocalizations {
           'All the info you need, beautifully laid out.',
       'screenshot_settings_title': 'Your app, your way',
       'screenshot_settings_subtitle': 'Customise everything to fit your life.',
+      'screenshot_feature_title': 'Shop smarter.\nLive better.',
+      'screenshot_feature_subtitle': 'Millions of products. One app.',
     },
     'nl': {
       'app_name': 'ShopNova',
@@ -174,6 +176,8 @@ class AppLocalizations {
           'Alle informatie die je nodig hebt, mooi weergegeven.',
       'screenshot_settings_title': 'Jouw app, jouw regels',
       'screenshot_settings_subtitle': 'Pas alles aan naar jouw wensen.',
+      'screenshot_feature_title': 'Slimmer winkelen.\nBeter leven.',
+      'screenshot_feature_subtitle': 'Miljoenen producten. Één app.',
     },
     'es': {
       'app_name': 'ShopNova',
@@ -252,6 +256,8 @@ class AppLocalizations {
       'screenshot_settings_title': 'Tu app, a tu manera',
       'screenshot_settings_subtitle':
           'Personaliza todo según tu estilo de vida.',
+      'screenshot_feature_title': 'Compra más inteligente.\nVive mejor.',
+      'screenshot_feature_subtitle': 'Millones de productos. Una app.',
     },
     'de': {
       'app_name': 'ShopNova',
@@ -329,6 +335,8 @@ class AppLocalizations {
           'Alle Infos, die du brauchst, wunderschön dargestellt.',
       'screenshot_settings_title': 'Deine App, dein Stil',
       'screenshot_settings_subtitle': 'Passe alles nach deinem Leben an.',
+      'screenshot_feature_title': 'Klüger einkaufen.\nBesser leben.',
+      'screenshot_feature_subtitle': 'Millionen Produkte. Eine App.',
     },
   };
 
@@ -408,6 +416,8 @@ class AppLocalizations {
   String get screenshotDetailSubtitle => _get('screenshot_detail_subtitle');
   String get screenshotSettingsTitle => _get('screenshot_settings_title');
   String get screenshotSettingsSubtitle => _get('screenshot_settings_subtitle');
+  String get screenshotFeatureTitle => _get('screenshot_feature_title');
+  String get screenshotFeatureSubtitle => _get('screenshot_feature_subtitle');
 }
 
 class _AppLocalizationsDelegate
