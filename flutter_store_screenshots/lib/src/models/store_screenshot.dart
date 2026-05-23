@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 /// from the parent [ScreenshotSet] or the [FlutterStoreScreenshotsApp].
 class StoreScreenshot {
   const StoreScreenshot({
+    this.title,
+    this.subtitle,
     this.locale,
     this.targetPlatform,
     this.size,
@@ -13,6 +15,14 @@ class StoreScreenshot {
     this.theme,
     required this.builder,
   });
+
+  /// Optional marketing title displayed above the device frame by the
+  /// [ScreenshotDecorator], if one is set on the parent [ScreenshotSet].
+  final String? title;
+
+  /// Optional marketing subtitle displayed below the device frame by the
+  /// [ScreenshotDecorator], if one is set on the parent [ScreenshotSet].
+  final String? subtitle;
 
   /// The locale for this screenshot. Overrides the parent set's locale and
   /// the app-level selected locale when set.

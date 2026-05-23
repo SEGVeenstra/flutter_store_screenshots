@@ -11,6 +11,7 @@ class ScreenshotRender extends StatelessWidget {
     required this.size,
     required this.pixelDensity,
     required this.builder,
+    this.decorator,
   });
 
   final Locale locale;
@@ -19,6 +20,13 @@ class ScreenshotRender extends StatelessWidget {
   final Size size;
   final double pixelDensity;
   final WidgetBuilder builder;
+
+  /// Optional bound decorator — already has title/subtitle closed over.
+  /// When present, the decorator is responsible for the canvas layout and
+  /// for placing [builder] inside a frame that injects the correct inner
+  /// [MediaQuery]. The canvas-level [MediaQuery] (size = [size]) is still
+  /// applied before calling the decorator.
+  final Widget Function(BuildContext, WidgetBuilder)? decorator;
 
   ThemeData _resolveTheme() {
     if (theme != null && platform != null) {
@@ -52,7 +60,9 @@ class ScreenshotRender extends StatelessWidget {
           child: SizedBox(
             width: size.width,
             height: size.height,
-            child: Builder(builder: builder),
+            child: decorator != null
+                ? Builder(builder: (ctx) => decorator!(ctx, builder))
+                : Builder(builder: builder),
           ),
         ),
       ),
