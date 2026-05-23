@@ -114,6 +114,7 @@ void main() {
           decorator: _featureGraphicDecorator,
           storeScreenshots: [
             StoreScreenshot(
+              name: 'feature_graphic',
               titleBuilder: (ctx) =>
                   AppLocalizations.of(ctx).screenshotFeatureTitle,
               subtitleBuilder: (ctx) =>
@@ -275,21 +276,25 @@ Widget _framedDecorator(
 
 List<StoreScreenshot> _phoneScreenshots() => [
   StoreScreenshot(
+    name: 'login',
     titleBuilder: (ctx) => AppLocalizations.of(ctx).screenshotLoginTitle,
     subtitleBuilder: (ctx) => AppLocalizations.of(ctx).screenshotLoginSubtitle,
     builder: (_) => const LoginScreen(),
   ),
   StoreScreenshot(
+    name: 'home',
     titleBuilder: (ctx) => AppLocalizations.of(ctx).screenshotHomeTitle,
     subtitleBuilder: (ctx) => AppLocalizations.of(ctx).screenshotHomeSubtitle,
     builder: (_) => const HomeScreen(),
   ),
   StoreScreenshot(
+    name: 'detail',
     titleBuilder: (ctx) => AppLocalizations.of(ctx).screenshotDetailTitle,
     subtitleBuilder: (ctx) => AppLocalizations.of(ctx).screenshotDetailSubtitle,
     builder: (_) => const DetailScreen(),
   ),
   StoreScreenshot(
+    name: 'settings',
     titleBuilder: (ctx) => AppLocalizations.of(ctx).screenshotSettingsTitle,
     subtitleBuilder: (ctx) =>
         AppLocalizations.of(ctx).screenshotSettingsSubtitle,
@@ -299,21 +304,25 @@ List<StoreScreenshot> _phoneScreenshots() => [
 
 List<StoreScreenshot> _tabletScreenshots() => [
   StoreScreenshot(
+    name: 'login',
     titleBuilder: (ctx) => AppLocalizations.of(ctx).screenshotLoginTitle,
     subtitleBuilder: (ctx) => AppLocalizations.of(ctx).screenshotLoginSubtitle,
     builder: (_) => const LoginScreen(),
   ),
   StoreScreenshot(
+    name: 'home',
     titleBuilder: (ctx) => AppLocalizations.of(ctx).screenshotHomeTitle,
     subtitleBuilder: (ctx) => AppLocalizations.of(ctx).screenshotHomeSubtitle,
     builder: (_) => const HomeScreen(),
   ),
   StoreScreenshot(
+    name: 'detail',
     titleBuilder: (ctx) => AppLocalizations.of(ctx).screenshotDetailTitle,
     subtitleBuilder: (ctx) => AppLocalizations.of(ctx).screenshotDetailSubtitle,
     builder: (_) => const DetailScreen(),
   ),
   StoreScreenshot(
+    name: 'settings',
     titleBuilder: (ctx) => AppLocalizations.of(ctx).screenshotSettingsTitle,
     subtitleBuilder: (ctx) =>
         AppLocalizations.of(ctx).screenshotSettingsSubtitle,

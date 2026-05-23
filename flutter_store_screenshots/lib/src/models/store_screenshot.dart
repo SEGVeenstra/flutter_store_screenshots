@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 /// from the parent [ScreenshotSet] or the [FlutterStoreScreenshotsApp].
 class StoreScreenshot {
   const StoreScreenshot({
+    this.name,
     this.titleBuilder,
     this.subtitleBuilder,
     this.locale,
@@ -15,6 +16,11 @@ class StoreScreenshot {
     this.theme,
     required this.builder,
   });
+
+  /// Optional name used as a suffix in the exported file name
+  /// (e.g. `'login'` → `01_login.png`). When absent the file is named by
+  /// index only (e.g. `01.png`).
+  final String? name;
 
   /// Optional builder that returns a localized marketing title for use by
   /// the [ScreenshotDecorator]. Called with the decorator's [BuildContext],
