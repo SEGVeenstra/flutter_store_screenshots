@@ -10,14 +10,16 @@ import 'store_screenshot.dart';
 /// - [contentBuilder] is the raw app-screen builder. Pass it directly to a
 ///   device-frame widget (e.g. `DeviceFrame(screen: Builder(builder: contentBuilder))`)
 ///   so the frame can inject the correct inner [MediaQuery] for the app content.
-/// - [title] and [subtitle] come from [StoreScreenshot.title] /
-///   [StoreScreenshot.subtitle] — use them for marketing copy.
+/// - [titleBuilder] and [subtitleBuilder] come from
+///   [StoreScreenshot.titleBuilder] / [StoreScreenshot.subtitleBuilder].
+///   Call them with [context] to get the localized string, e.g.
+///   `titleBuilder?.call(context)`.
 typedef ScreenshotDecorator =
     Widget Function(
       BuildContext context,
       WidgetBuilder contentBuilder,
-      String? title,
-      String? subtitle,
+      String? Function(BuildContext)? titleBuilder,
+      String? Function(BuildContext)? subtitleBuilder,
     );
 
 /// A named group of store screenshots that share common configuration.

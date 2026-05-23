@@ -183,13 +183,17 @@ class _ScreenshotsHome extends StatelessWidget {
     final previewWidth =
         previewHeight * (resolvedSize!.width / resolvedSize.height);
 
-    // Bind the set-level decorator with this screenshot's title/subtitle so
-    // ScreenshotRender only needs a simple (BuildContext, WidgetBuilder) fn.
+    // Bind the set-level decorator with this screenshot's builder callbacks
+    // so ScreenshotRender only needs a simple (BuildContext, WidgetBuilder) fn.
     final rawDecorator = set.decorator;
     final boundDecorator = rawDecorator == null
         ? null
-        : (BuildContext ctx, WidgetBuilder cb) =>
-              rawDecorator(ctx, cb, screenshot.title, screenshot.subtitle);
+        : (BuildContext ctx, WidgetBuilder cb) => rawDecorator(
+            ctx,
+            cb,
+            screenshot.titleBuilder,
+            screenshot.subtitleBuilder,
+          );
 
     return Column(
       children: [

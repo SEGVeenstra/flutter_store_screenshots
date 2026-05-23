@@ -118,11 +118,13 @@ void main() {
 Widget _framedDecorator(
   BuildContext context,
   WidgetBuilder contentBuilder,
-  String? title,
-  String? subtitle, {
+  String? Function(BuildContext)? titleBuilder,
+  String? Function(BuildContext)? subtitleBuilder, {
   required DeviceInfo device,
   required Gradient gradient,
 }) {
+  final title = titleBuilder?.call(context);
+  final subtitle = subtitleBuilder?.call(context);
   return Container(
     decoration: BoxDecoration(gradient: gradient),
     child: Column(
@@ -177,46 +179,48 @@ Widget _framedDecorator(
 
 List<StoreScreenshot> _phoneScreenshots() => [
   StoreScreenshot(
-    title: 'Sign in securely',
-    subtitle: 'One tap and you\'re in.',
+    titleBuilder: (ctx) => AppLocalizations.of(ctx).screenshotLoginTitle,
+    subtitleBuilder: (ctx) => AppLocalizations.of(ctx).screenshotLoginSubtitle,
     builder: (_) => const LoginScreen(),
   ),
   StoreScreenshot(
-    title: 'Everything at a glance',
-    subtitle: 'Your home screen, simplified.',
+    titleBuilder: (ctx) => AppLocalizations.of(ctx).screenshotHomeTitle,
+    subtitleBuilder: (ctx) => AppLocalizations.of(ctx).screenshotHomeSubtitle,
     builder: (_) => const HomeScreen(),
   ),
   StoreScreenshot(
-    title: 'Dive into the details',
-    subtitle: 'All the info you need, beautifully laid out.',
+    titleBuilder: (ctx) => AppLocalizations.of(ctx).screenshotDetailTitle,
+    subtitleBuilder: (ctx) => AppLocalizations.of(ctx).screenshotDetailSubtitle,
     builder: (_) => const DetailScreen(),
   ),
   StoreScreenshot(
-    title: 'Your app, your way',
-    subtitle: 'Customise everything to fit your life.',
+    titleBuilder: (ctx) => AppLocalizations.of(ctx).screenshotSettingsTitle,
+    subtitleBuilder: (ctx) =>
+        AppLocalizations.of(ctx).screenshotSettingsSubtitle,
     builder: (_) => const SettingsScreen(),
   ),
 ];
 
 List<StoreScreenshot> _tabletScreenshots() => [
   StoreScreenshot(
-    title: 'Sign in securely',
-    subtitle: 'One tap and you\'re in.',
+    titleBuilder: (ctx) => AppLocalizations.of(ctx).screenshotLoginTitle,
+    subtitleBuilder: (ctx) => AppLocalizations.of(ctx).screenshotLoginSubtitle,
     builder: (_) => const LoginScreen(),
   ),
   StoreScreenshot(
-    title: 'Everything at a glance',
-    subtitle: 'Your home screen, simplified.',
+    titleBuilder: (ctx) => AppLocalizations.of(ctx).screenshotHomeTitle,
+    subtitleBuilder: (ctx) => AppLocalizations.of(ctx).screenshotHomeSubtitle,
     builder: (_) => const HomeScreen(),
   ),
   StoreScreenshot(
-    title: 'Dive into the details',
-    subtitle: 'All the info you need, beautifully laid out.',
+    titleBuilder: (ctx) => AppLocalizations.of(ctx).screenshotDetailTitle,
+    subtitleBuilder: (ctx) => AppLocalizations.of(ctx).screenshotDetailSubtitle,
     builder: (_) => const DetailScreen(),
   ),
   StoreScreenshot(
-    title: 'Your app, your way',
-    subtitle: 'Customise everything to fit your life.',
+    titleBuilder: (ctx) => AppLocalizations.of(ctx).screenshotSettingsTitle,
+    subtitleBuilder: (ctx) =>
+        AppLocalizations.of(ctx).screenshotSettingsSubtitle,
     builder: (_) => const SettingsScreen(),
   ),
 ];

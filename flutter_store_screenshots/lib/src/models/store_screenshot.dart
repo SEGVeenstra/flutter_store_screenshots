@@ -6,8 +6,8 @@ import 'package:flutter/material.dart';
 /// from the parent [ScreenshotSet] or the [FlutterStoreScreenshotsApp].
 class StoreScreenshot {
   const StoreScreenshot({
-    this.title,
-    this.subtitle,
+    this.titleBuilder,
+    this.subtitleBuilder,
     this.locale,
     this.targetPlatform,
     this.size,
@@ -16,13 +16,15 @@ class StoreScreenshot {
     required this.builder,
   });
 
-  /// Optional marketing title displayed above the device frame by the
-  /// [ScreenshotDecorator], if one is set on the parent [ScreenshotSet].
-  final String? title;
+  /// Optional builder that returns a localized marketing title for use by
+  /// the [ScreenshotDecorator]. Called with the decorator's [BuildContext],
+  /// which already has the correct [Localizations] for the screenshot's
+  /// locale, so `AppLocalizations.of(ctx)` returns the right language.
+  final String? Function(BuildContext)? titleBuilder;
 
-  /// Optional marketing subtitle displayed below the device frame by the
-  /// [ScreenshotDecorator], if one is set on the parent [ScreenshotSet].
-  final String? subtitle;
+  /// Optional builder that returns a localized marketing subtitle for use by
+  /// the [ScreenshotDecorator]. Same locale semantics as [titleBuilder].
+  final String? Function(BuildContext)? subtitleBuilder;
 
   /// The locale for this screenshot. Overrides the parent set's locale and
   /// the app-level selected locale when set.

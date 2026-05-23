@@ -88,6 +88,15 @@ class AppLocalizations {
       'product_5': 'Leather Bag',
       'product_6': 'Sunglasses',
       'current_lang': 'English',
+      'screenshot_login_title': 'Sign in securely',
+      'screenshot_login_subtitle': 'One tap and you\'re in.',
+      'screenshot_home_title': 'Everything at a glance',
+      'screenshot_home_subtitle': 'Your home screen, simplified.',
+      'screenshot_detail_title': 'Dive into the details',
+      'screenshot_detail_subtitle':
+          'All the info you need, beautifully laid out.',
+      'screenshot_settings_title': 'Your app, your way',
+      'screenshot_settings_subtitle': 'Customise everything to fit your life.',
     },
     'nl': {
       'app_name': 'ShopNova',
@@ -156,6 +165,15 @@ class AppLocalizations {
       'product_5': 'Leren Tas',
       'product_6': 'Zonnebril',
       'current_lang': 'Nederlands',
+      'screenshot_login_title': 'Veilig inloggen',
+      'screenshot_login_subtitle': 'Eén tik en je bent binnen.',
+      'screenshot_home_title': 'Alles in één oogopslag',
+      'screenshot_home_subtitle': 'Jouw startscherm, overzichtelijk.',
+      'screenshot_detail_title': 'Duik in de details',
+      'screenshot_detail_subtitle':
+          'Alle informatie die je nodig hebt, mooi weergegeven.',
+      'screenshot_settings_title': 'Jouw app, jouw regels',
+      'screenshot_settings_subtitle': 'Pas alles aan naar jouw wensen.',
     },
     'es': {
       'app_name': 'ShopNova',
@@ -224,6 +242,16 @@ class AppLocalizations {
       'product_5': 'Bolso de Cuero',
       'product_6': 'Gafas de Sol',
       'current_lang': 'Español',
+      'screenshot_login_title': 'Inicia sesión de forma segura',
+      'screenshot_login_subtitle': 'Un toque y estás dentro.',
+      'screenshot_home_title': 'Todo de un vistazo',
+      'screenshot_home_subtitle': 'Tu pantalla de inicio, simplificada.',
+      'screenshot_detail_title': 'Sumérgete en los detalles',
+      'screenshot_detail_subtitle':
+          'Toda la información que necesitas, presentada a la perfección.',
+      'screenshot_settings_title': 'Tu app, a tu manera',
+      'screenshot_settings_subtitle':
+          'Personaliza todo según tu estilo de vida.',
     },
     'de': {
       'app_name': 'ShopNova',
@@ -292,6 +320,15 @@ class AppLocalizations {
       'product_5': 'Ledertasche',
       'product_6': 'Sonnenbrille',
       'current_lang': 'Deutsch',
+      'screenshot_login_title': 'Sicher anmelden',
+      'screenshot_login_subtitle': 'Ein Tipp und du bist drin.',
+      'screenshot_home_title': 'Alles auf einen Blick',
+      'screenshot_home_subtitle': 'Dein Startbildschirm, vereinfacht.',
+      'screenshot_detail_title': 'Tauche in die Details ein',
+      'screenshot_detail_subtitle':
+          'Alle Infos, die du brauchst, wunderschön dargestellt.',
+      'screenshot_settings_title': 'Deine App, dein Stil',
+      'screenshot_settings_subtitle': 'Passe alles nach deinem Leben an.',
     },
   };
 
@@ -361,6 +398,16 @@ class AppLocalizations {
   String get productDesc => _get('product_desc');
   String get currentLang => _get('current_lang');
   String productLabel(int index) => _get('product_$index');
+
+  // Screenshot marketing copy
+  String get screenshotLoginTitle => _get('screenshot_login_title');
+  String get screenshotLoginSubtitle => _get('screenshot_login_subtitle');
+  String get screenshotHomeTitle => _get('screenshot_home_title');
+  String get screenshotHomeSubtitle => _get('screenshot_home_subtitle');
+  String get screenshotDetailTitle => _get('screenshot_detail_title');
+  String get screenshotDetailSubtitle => _get('screenshot_detail_subtitle');
+  String get screenshotSettingsTitle => _get('screenshot_settings_title');
+  String get screenshotSettingsSubtitle => _get('screenshot_settings_subtitle');
 }
 
 class _AppLocalizationsDelegate
