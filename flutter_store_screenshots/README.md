@@ -1,39 +1,357 @@
-<!--
-This README describes the package. If you publish this package to pub.dev,
-this README's contents appear on the landing page for your package.
+# Flutter Store Screenshots
 
-For information about how to write a good package README, see the guide for
-[writing package pages](https://dart.dev/tools/pub/writing-package-pages).
+![Flutter Store Screenshots preview](docs/preview.png)
 
-For general information about developing packages, see the Dart guide for
-[creating packages](https://dart.dev/guides/libraries/create-packages)
-and the Flutter guide for
-[developing packages and plugins](https://flutter.dev/to/develop-packages).
--->
+A Flutter tool for **composing, previewing, and exporting App Store & Google Play screenshots** — all from a single Dart entry point, with full localisation support, device frames, and one-click bulk export.
 
-TODO: Put a short description of the package here that helps potential users
-know whether this package might be useful for them.
+---
 
 ## Features
 
-TODO: List what your package can do. Maybe include images, gifs, or videos.
+- **Live preview** — run the tool as a regular Flutter desktop/web app and see your screenshots rendered in real time.
+- **Locale switcher** — flip between every locale your app supports with a dropdown, without restarting.
+- **Multiple screenshot sets** — configure separate sets for each device size (iPhone 6.7", Android phone, iPad, tablet, feature graphic …) and switch between them instantly.
+- **Config inheritance** — set defaults at the app level, override them per set, override again per screenshot. Only set what differs.
+- **Custom decorators** — bring your own `ScreenshotDecorator` to wrap each screenshot in a gradient background, device frame, marketing title, subtitle — whatever the store requires.
+- **Localised marketing copy** — `titleBuilder` / `subtitleBuilder` receive a `BuildContext` that already has the correct locale active, so `AppLocalizations.of(ctx)` just works.
+- **Bulk PNG export** — one button writes every locale × every set × every screenshot to `./screenshots/<set>/<locale>/` with descriptive file names (`01_login.png`, `02_home.png` …).
+- **Works alongside `device_frame`** — slot a `DeviceFrame` widget into your decorator to get pixel-perfect device mockups for free.
+
+---
 
 ## Getting started
 
-TODO: List prerequisites and provide or point to information on how to
-start using the package.
+### Prerequisites
+
+- Flutter **3.x** or later (desktop or web target recommended for the preview tool)
+- Dart SDK **^3.0.0**
+
+### Installation
+
+Add the package to the `dependencies` of a dedicated screenshot app (typically kept at `<your_repo>/store_screenshots/` or as `<your_package>_example/`):
+
+```yaml
+# pubspec.yaml
+dependencies:
+  flutter_store_screenshots: ^0.0.1
+  device_frame: ^2.0.0          # optional but recommended
+```
+
+Then run:
+
+```bash
+flutter pub get
+```
+
+> **Tip:** Keep your screenshot project separate from your main app so it never ships to end-users. Import your app's widgets and localisation as a path dependency:
+>
+> ```yaml
+> dependencies:
+>   my_app:
+>     path: ../my_app
+> ```
+
+---
 
 ## Usage
 
-TODO: Include short and useful examples for package users. Add longer examples
-to `/example` folder.
+The entire tool is a single Flutter app. Your `main.dart` creates a `FlutterStoreScreenshotsApp` widget and passes it your screens, locales, and screenshot sets.
+
+### Minimal example
 
 ```dart
-const like = 'sample';
+import 'package:flutter/material.dart';
+import 'package:flutter_store_screenshots/flutter_store_screenshots.dart';
+
+import 'screens/home_screen.dart';
+
+void main() {
+  runApp(
+    FlutterStoreScreenshotsApp(
+      locales: const [Locale('en'), Locale('de')],
+      screenshotSets: [
+        ScreenshotSet(
+          name: 'iOS Phone 6.7"',
+          targetPlatform: TargetPlatform.iOS,
+          size: const Size(430, 932),
+          pixelDensity: 3.0,
+          storeScreenshots: [
+            StoreScreenshot(
+              name: 'home',
+              builder: (_) => const HomeScreen(),
+            ),
+          ],
+        ),
+      ],
+    ),
+  );
+}
 ```
+
+Run it on macOS, Linux, Windows, or in Chrome:
+
+```bash
+flutter run -d macos   # or: -d chrome
+```
+
+---
+
+## Core concepts
+
+### `FlutterStoreScreenshotsApp`
+
+The root widget. It renders the preview UI (toolbar + scrollable canvas) and orchestrates export.
+
+| Parameter | Type | Description |
+|---|---|---|
+| `locales` | `List<Locale>` | All locales your app supports. Populates the locale dropdown. |
+| `screenshotSets` | `List<ScreenshotSet>` | The device/format configurations to preview. |
+| `localizationsDelegates` | `List<LocalizationsDelegate>?` | Your app's generated ARB delegates (e.g. `AppLocalizations.delegate`). Forwarded to `MaterialApp` so `Localizations.override` works correctly inside screenshots. |
+| `theme` | `ThemeData?` | App-level default theme. Can be overridden by a set or individual screenshot. |
+
+---
+
+### `ScreenshotSet`
+
+A **named group** of screenshots that share a common configuration. Think of one set per device/format combination you need to submit to the store.
+
+| Parameter | Type | Description |
+|---|---|---|
+| `name` | `String` | Display name shown in the set selector (e.g. `'iOS Phone 6.7"'`). |
+| `targetPlatform` | `TargetPlatform?` | Platform injected into the resolved theme for all screenshots in this set. |
+| `size` | `Size?` | Logical pixel size (canvas dimensions). At least one of `ScreenshotSet.size` or `StoreScreenshot.size` must be provided. |
+| `pixelDensity` | `double?` | Device pixel ratio injected via `MediaQuery`. |
+| `theme` | `ThemeData?` | Overrides the app-level theme for this set. |
+| `decorator` | `ScreenshotDecorator?` | Applies a shared visual wrapper (background, device frame, text) to every screenshot in the set. |
+| `storeScreenshots` | `List<StoreScreenshot>` | The individual screenshots belonging to this set. |
+
+---
+
+### `StoreScreenshot`
+
+Configuration for **a single screenshot**. Every field except `builder` is optional; missing values are inherited from the parent `ScreenshotSet`, then from `FlutterStoreScreenshotsApp`.
+
+| Parameter | Type | Description |
+|---|---|---|
+| `name` | `String?` | Used as a suffix in the exported file name (e.g. `'login'` → `01_login.png`). |
+| `builder` | `WidgetBuilder` | **Required.** Returns the app screen widget. |
+| `titleBuilder` | `String? Function(BuildContext)?` | Returns a marketing title string. The `BuildContext` has the correct locale, so `AppLocalizations.of(ctx)` returns the right language. |
+| `subtitleBuilder` | `String? Function(BuildContext)?` | Same as `titleBuilder` but for the subtitle. |
+| `locale` | `Locale?` | Overrides the set and app-level locale for this screenshot only. |
+| `targetPlatform` | `TargetPlatform?` | Overrides the set-level platform. |
+| `size` | `Size?` | Overrides the set-level canvas size. |
+| `pixelDensity` | `double?` | Overrides the set-level pixel density. |
+| `theme` | `ThemeData?` | Overrides the set-level theme. |
+
+---
+
+### `ScreenshotDecorator`
+
+```dart
+typedef ScreenshotDecorator =
+    Widget Function(
+      BuildContext context,
+      WidgetBuilder contentBuilder,
+      String? Function(BuildContext)? titleBuilder,
+      String? Function(BuildContext)? subtitleBuilder,
+    );
+```
+
+A `ScreenshotDecorator` is a function that **owns the full canvas layout**. It receives:
+
+- `context` — build context at canvas level. `MediaQuery.of(context).size` equals the configured canvas size.
+- `contentBuilder` — the raw app-screen builder. **Pass this to a `DeviceFrame`** (or any wrapper widget) so the frame can inject the correct inner `MediaQuery` for the app content:
+  ```dart
+  DeviceFrame(
+    device: Devices.ios.iPhone16ProMax,
+    screen: Builder(builder: contentBuilder),
+  )
+  ```
+- `titleBuilder` / `subtitleBuilder` — call with `context` to get the localised string:
+  ```dart
+  final title = titleBuilder?.call(context);
+  ```
+
+---
+
+## Full example with device frames and localisation
+
+```dart
+import 'package:device_frame/device_frame.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_store_screenshots/flutter_store_screenshots.dart';
+
+import 'l10n/app_localizations.dart';
+import 'screens/home_screen.dart';
+import 'screens/login_screen.dart';
+
+void main() {
+  runApp(
+    FlutterStoreScreenshotsApp(
+      locales: const [Locale('en'), Locale('de'), Locale('nl')],
+      localizationsDelegates: const [AppLocalizations.delegate],
+      theme: ThemeData(colorSchemeSeed: Colors.indigo),
+      screenshotSets: [
+        ScreenshotSet(
+          name: 'iOS Phone 6.7"',
+          targetPlatform: TargetPlatform.iOS,
+          size: const Size(430, 932),
+          pixelDensity: 3.0,
+          decorator: (ctx, builder, title, subtitle) {
+            return Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Color(0xFF1A237E), Color(0xFF7986CB)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
+              child: Column(
+                children: [
+                  if (title?.call(ctx) != null)
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(24, 48, 24, 0),
+                      child: Text(
+                        title!.call(ctx)!,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: DeviceFrame(
+                        device: Devices.ios.iPhone16ProMax,
+                        screen: Builder(builder: builder),
+                      ),
+                    ),
+                  ),
+                  if (subtitle?.call(ctx) != null)
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(24, 0, 24, 48),
+                      child: Text(
+                        subtitle!.call(ctx)!,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 18,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            );
+          },
+          storeScreenshots: [
+            StoreScreenshot(
+              name: 'login',
+              titleBuilder: (ctx) => AppLocalizations.of(ctx).screenshotLoginTitle,
+              subtitleBuilder: (ctx) => AppLocalizations.of(ctx).screenshotLoginSubtitle,
+              builder: (_) => const LoginScreen(),
+            ),
+            StoreScreenshot(
+              name: 'home',
+              titleBuilder: (ctx) => AppLocalizations.of(ctx).screenshotHomeTitle,
+              subtitleBuilder: (ctx) => AppLocalizations.of(ctx).screenshotHomeSubtitle,
+              builder: (_) => const HomeScreen(),
+            ),
+          ],
+        ),
+      ],
+    ),
+  );
+}
+```
+
+---
+
+## Exporting screenshots
+
+Click the **download icon** (↓) in the toolbar to export every locale × every set × every screenshot at once. Files are written to:
+
+```
+<project_root>/screenshots/<set_name>/<locale>/
+  01_login.png
+  02_home.png
+  ...
+```
+
+Once the export is complete, click the **folder icon** to open the output directory in Finder / Explorer.
+
+> The export runs entirely on the Flutter rendering engine — no external tools, simulators, or screenshot drivers required.
+
+---
+
+## Config inheritance cheat-sheet
+
+Values are resolved in this order (first non-null wins):
+
+```
+StoreScreenshot  →  ScreenshotSet  →  FlutterStoreScreenshotsApp
+```
+
+For example, `pixelDensity`:
+
+1. `StoreScreenshot.pixelDensity`
+2. `ScreenshotSet.pixelDensity`
+3. Falls back to `1.0`
+
+For `locale`:
+
+1. `StoreScreenshot.locale`
+2. `ScreenshotSet.locale`
+3. The locale currently selected in the toolbar dropdown
+
+---
+
+## Tips
+
+**Reuse the same screens for every device** — define your screenshots once and share them across sets:
+
+```dart
+List<StoreScreenshot> _myScreenshots() => [
+  StoreScreenshot(name: 'home', builder: (_) => const HomeScreen()),
+  StoreScreenshot(name: 'detail', builder: (_) => const DetailScreen()),
+];
+
+screenshotSets: [
+  ScreenshotSet(name: 'iOS Phone', size: const Size(430, 932), storeScreenshots: _myScreenshots()),
+  ScreenshotSet(name: 'iPad',      size: const Size(1024, 1366), storeScreenshots: _myScreenshots()),
+],
+```
+
+**Google Play Feature Graphic** — the 1024×500 px landscape banner is just another `ScreenshotSet` with a custom decorator:
+
+```dart
+ScreenshotSet(
+  name: 'Google Play Feature Graphic',
+  size: const Size(1024, 500),
+  pixelDensity: 1.0,
+  decorator: myFeatureGraphicDecorator,
+  storeScreenshots: [
+    StoreScreenshot(name: 'feature_graphic', builder: (_) => const HomeScreen()),
+  ],
+),
+```
+
+**Force a specific locale for a set** — useful when your Play Console submission requires the screenshots to be in a fixed language regardless of the toolbar selection:
+
+```dart
+ScreenshotSet(
+  name: 'iOS Phone 6.7" (EN)',
+  locale: const Locale('en'),
+  ...
+),
+```
+
+---
 
 ## Additional information
 
-TODO: Tell users more about the package: where to find more information, how to
-contribute to the package, how to file issues, what response they can expect
-from the package authors, and more.
+- File issues and feature requests on [GitHub](https://github.com/SEGVeenstra/flutter_store_screenshots/issues).
+- Contributions are welcome — please open an issue first to discuss larger changes.
+- See the [`example/`](example/) folder for a full working project with four screens, four locales, and five screenshot sets including a Google Play Feature Graphic.
