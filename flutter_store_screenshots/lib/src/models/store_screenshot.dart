@@ -15,6 +15,7 @@ class StoreScreenshot {
     this.pixelDensity,
     this.theme,
     this.captureDelay,
+    this.showBackButton = false,
     required this.builder,
   });
 
@@ -63,6 +64,16 @@ class StoreScreenshot {
   /// to a duration slightly longer than the animation to ensure the capture
   /// shows the fully-loaded state.
   final Duration? captureDelay;
+
+  /// Whether to allow the rendered screen to show a back button.
+  ///
+  /// By default (`false`) the content is wrapped in a fresh [Navigator] so
+  /// the screen always appears as the root route — no back button is shown
+  /// in the [AppBar], regardless of the surrounding navigation stack.
+  ///
+  /// Set to `true` when you intentionally want to capture a screen that
+  /// has a back button (e.g. a detail page that should show the ← icon).
+  final bool showBackButton;
 
   /// Builder for the screenshot content.
   final WidgetBuilder builder;

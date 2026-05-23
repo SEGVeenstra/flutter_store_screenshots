@@ -226,6 +226,7 @@ class _ScreenshotsHomeState extends State<_ScreenshotsHome> {
     final resolvedPixelDensity =
         screenshot.pixelDensity ?? set.pixelDensity ?? 1.0;
     final resolvedTheme = screenshot.theme ?? set.theme ?? widget.appTheme;
+    final resolvedShowBackButton = screenshot.showBackButton;
 
     final previewWidth =
         previewHeight * (resolvedSize!.width / resolvedSize.height);
@@ -257,6 +258,7 @@ class _ScreenshotsHomeState extends State<_ScreenshotsHome> {
               pixelDensity: resolvedPixelDensity,
               builder: screenshot.builder,
               decorator: boundDecorator,
+              showBackButton: resolvedShowBackButton,
             ),
           ),
         ),
@@ -291,6 +293,8 @@ class _ScreenshotsHomeState extends State<_ScreenshotsHome> {
     WidgetBuilder captureBuilder =
         widget.screenshotSets.first.storeScreenshots.first.builder;
     Widget Function(BuildContext, WidgetBuilder)? captureDecorator;
+    var captureShowBackButton =
+        widget.screenshotSets.first.storeScreenshots.first.showBackButton;
 
     final captureKey = GlobalKey();
     final progressNotifier = ValueNotifier<String>('0 / $total');
@@ -329,6 +333,7 @@ class _ScreenshotsHomeState extends State<_ScreenshotsHome> {
                           pixelDensity: capturePixelDensity,
                           builder: captureBuilder,
                           decorator: captureDecorator,
+                          showBackButton: captureShowBackButton,
                         ),
                       ),
                     ),
@@ -391,6 +396,7 @@ class _ScreenshotsHomeState extends State<_ScreenshotsHome> {
               captureTheme = resolvedTheme;
               captureBuilder = screenshot.builder;
               captureDecorator = boundDecorator;
+              captureShowBackButton = screenshot.showBackButton;
             });
 
             // Wait for the new content to be fully rendered.
