@@ -68,6 +68,7 @@ List<StoreScreenshot> _phoneScreenshots() => [
 ];
 
 List<StoreScreenshot> _tabletScreenshots() => [
+  StoreScreenshot(builder: (_) => const LoginScreen()),
   StoreScreenshot(builder: (_) => const HomeScreen()),
   StoreScreenshot(builder: (_) => const DetailScreen()),
   StoreScreenshot(builder: (_) => const SettingsScreen()),

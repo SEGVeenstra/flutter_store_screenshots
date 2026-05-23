@@ -336,7 +336,7 @@ class _FeaturedBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 160,
+      height: 178,
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [cs.primary, cs.tertiary],
@@ -392,7 +392,7 @@ class _FeaturedBanner extends StatelessWidget {
           ),
           // Text content
           Padding(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.fromLTRB(16, 14, 120, 14),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
