@@ -35,6 +35,7 @@ class ScreenshotSet {
     this.size,
     this.pixelDensity,
     this.theme,
+    this.captureDelay,
     this.decorator,
     required this.storeScreenshots,
   });
@@ -62,6 +63,15 @@ class ScreenshotSet {
   /// app-level theme. [targetPlatform] always overrides the [platform]
   /// field baked into this theme.
   final ThemeData? theme;
+
+  /// Optional delay applied after each widget is rendered but before the
+  /// screenshot is captured. Acts as a default for all [storeScreenshots]
+  /// in this set; individual screenshots can override it with their own
+  /// [StoreScreenshot.captureDelay].
+  ///
+  /// Useful when screens contain animations or images (e.g. from
+  /// `cached_network_image`) that play a fade-in on first render.
+  final Duration? captureDelay;
 
   /// Optional decorator applied to every screenshot in this set.
   ///

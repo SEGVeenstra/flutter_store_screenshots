@@ -29,19 +29,23 @@ class AndroidScreenshotSet extends ScreenshotSet {
   /// Google Play — Android phone.
   ///
   /// Canvas: 412 × 892 logical px · 2.625× density → **≈1081 × 2341** physical px.
-  AndroidScreenshotSet.phone({super.decorator, required super.storeScreenshots})
-    : super(
-        name: 'Google Play Phone',
-        targetPlatform: TargetPlatform.android,
-        size: const Size(412, 892),
-        pixelDensity: 2.625,
-      );
+  AndroidScreenshotSet.phone({
+    super.decorator,
+    super.captureDelay,
+    required super.storeScreenshots,
+  }) : super(
+         name: 'Google Play Phone',
+         targetPlatform: TargetPlatform.android,
+         size: const Size(412, 892),
+         pixelDensity: 2.625,
+       );
 
   /// Google Play — 7" tablet.
   ///
   /// Canvas: 600 × 960 logical px · 2× density → **1200 × 1920** physical px.
   AndroidScreenshotSet.tablet7({
     super.decorator,
+    super.captureDelay,
     required super.storeScreenshots,
   }) : super(
          name: 'Google Play 7" Tablet',
@@ -55,6 +59,7 @@ class AndroidScreenshotSet extends ScreenshotSet {
   /// Canvas: 800 × 1280 logical px · 2× density → **1600 × 2560** physical px.
   AndroidScreenshotSet.tablet10({
     super.decorator,
+    super.captureDelay,
     required super.storeScreenshots,
   }) : super(
          name: 'Google Play 10" Tablet',
@@ -83,6 +88,7 @@ class AndroidScreenshotSet extends ScreenshotSet {
   /// ```
   AndroidScreenshotSet.featureGraphic({
     super.decorator,
+    super.captureDelay,
     required super.storeScreenshots,
   }) : super(
          name: 'Google Play Feature Graphic',

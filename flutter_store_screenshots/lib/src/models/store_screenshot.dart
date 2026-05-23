@@ -14,6 +14,7 @@ class StoreScreenshot {
     this.size,
     this.pixelDensity,
     this.theme,
+    this.captureDelay,
     required this.builder,
   });
 
@@ -53,6 +54,15 @@ class StoreScreenshot {
   /// and the app-level theme when set. [targetPlatform] always overrides
   /// the [platform] field baked into this theme.
   final ThemeData? theme;
+
+  /// Optional delay applied after the widget is rendered but before the
+  /// screenshot is captured. Overrides the parent set's [captureDelay].
+  ///
+  /// Useful when the screen contains animations or images (e.g. from
+  /// `cached_network_image`) that play a fade-in on first render — set this
+  /// to a duration slightly longer than the animation to ensure the capture
+  /// shows the fully-loaded state.
+  final Duration? captureDelay;
 
   /// Builder for the screenshot content.
   final WidgetBuilder builder;

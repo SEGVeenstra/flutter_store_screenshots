@@ -31,6 +31,7 @@ class AppleScreenshotSet extends ScreenshotSet {
   /// Canvas: 440 × 956 logical px · 3× density → **1320 × 2868** physical px.
   AppleScreenshotSet.iPhone69({
     super.decorator,
+    super.captureDelay,
     required super.storeScreenshots,
   }) : super(
          name: 'App Store iPhone 6.9"',
@@ -44,6 +45,7 @@ class AppleScreenshotSet extends ScreenshotSet {
   /// Canvas: 430 × 932 logical px · 3× density → **1290 × 2796** physical px.
   AppleScreenshotSet.iPhone67({
     super.decorator,
+    super.captureDelay,
     required super.storeScreenshots,
   }) : super(
          name: 'App Store iPhone 6.7"',
@@ -57,6 +59,7 @@ class AppleScreenshotSet extends ScreenshotSet {
   /// Canvas: 1024 × 1366 logical px · 2× density → **2048 × 2732** physical px.
   AppleScreenshotSet.iPadPro129({
     super.decorator,
+    super.captureDelay,
     required super.storeScreenshots,
   }) : super(
          name: 'App Store iPad Pro 12.9"',

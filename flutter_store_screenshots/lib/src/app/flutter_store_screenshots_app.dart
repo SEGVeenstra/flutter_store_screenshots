@@ -396,6 +396,11 @@ class _ScreenshotsHomeState extends State<_ScreenshotsHome> {
             // Wait for the new content to be fully rendered.
             await WidgetsBinding.instance.endOfFrame;
 
+            // Apply optional capture delay (e.g. to let fade-in animations
+            // from cached_network_image finish before capturing).
+            final captureDelay = screenshot.captureDelay ?? set.captureDelay;
+            if (captureDelay != null) await Future.delayed(captureDelay);
+
             // Capture from the on-screen RepaintBoundary.
             final boundary =
                 captureKey.currentContext?.findRenderObject()
