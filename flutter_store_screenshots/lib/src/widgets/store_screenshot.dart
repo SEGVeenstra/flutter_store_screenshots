@@ -1,35 +1,58 @@
 import 'package:flutter/material.dart';
 
-class StoreScreenshot extends StatelessWidget {
-  const StoreScreenshot({
+/// Internal widget that renders a single screenshot with fully resolved
+/// configuration values.
+class ScreenshotRender extends StatelessWidget {
+  const ScreenshotRender({
     super.key,
-    this.locale,
-    required this.builder,
-    required this.size,
+    required this.locale,
     this.platform,
+    this.theme,
+    required this.size,
+    required this.pixelDensity,
+    required this.builder,
   });
 
-  final Locale? locale;
-  final Size size;
+  final Locale locale;
   final TargetPlatform? platform;
+  final ThemeData? theme;
+  final Size size;
+  final double pixelDensity;
+  final WidgetBuilder builder;
 
-  final Widget Function(BuildContext) builder;
+  ThemeData _resolveTheme() {
+    if (theme != null && platform != null) {
+      return theme!.copyWith(platform: platform);
+    } else if (theme != null) {
+      return theme!;
+    } else if (platform != null) {
+      return ThemeData(platform: platform);
+    }
+    return ThemeData.fallback();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Theme(
-      data: ThemeData(platform: platform),
-      child: Localizations.override(
-        context: context,
-        locale: locale,
-        child: Center(
-          child: FittedBox(
-            fit: BoxFit.scaleDown,
-            child: SizedBox(
-              height: size.height,
-              width: size.width,
-              child: builder(context),
-            ),
+      data: _resolveTheme(),
+      child: MediaQuery(
+        data: MediaQuery.of(context).copyWith(
+          size: size,
+          devicePixelRatio: pixelDensity,
+          // Zero out host-app insets so the screenshot renders in isolation,
+          // as it would on the target device.
+          padding: EdgeInsets.zero,
+          viewPadding: EdgeInsets.zero,
+          viewInsets: EdgeInsets.zero,
+          systemGestureInsets: EdgeInsets.zero,
+        ),
+        child: Localizations.override(
+          context: context,
+          locale: locale,
+          child: SizedBox(
+            width: size.width,
+            height: size.height,
+            child: Builder(builder: builder),
           ),
         ),
       ),
