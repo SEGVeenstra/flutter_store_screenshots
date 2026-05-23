@@ -69,7 +69,7 @@ class _FlutterStoreScreenshotsAppState
   }
 }
 
-class _ScreenshotsHome extends StatelessWidget {
+class _ScreenshotsHome extends StatefulWidget {
   const _ScreenshotsHome({
     required this.locales,
     required this.screenshotSets,
@@ -91,19 +91,37 @@ class _ScreenshotsHome extends StatelessWidget {
   final ValueChanged<int> onSetChanged;
 
   @override
+  State<_ScreenshotsHome> createState() => _ScreenshotsHomeState();
+}
+
+class _ScreenshotsHomeState extends State<_ScreenshotsHome> {
+  bool _screenshotsDirExists = false;
+
+  String get _outputBase =>
+      '${Directory.current.path}${Platform.pathSeparator}screenshots';
+
+  @override
+  void initState() {
+    super.initState();
+    _checkScreenshotsDirExists();
+  }
+
+  Future<void> _checkScreenshotsDirExists() async {
+    final exists = await Directory(_outputBase).exists();
+    if (mounted) setState(() => _screenshotsDirExists = exists);
+  }
+
+  Future<void> _openScreenshotsFolder() async {
+    await Process.run('open', [_outputBase]);
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final set = screenshotSets[selectedSetIndex];
+    final set = widget.screenshotSets[widget.selectedSetIndex];
     return Scaffold(
       backgroundColor: Colors.grey[200],
       appBar: AppBar(
         title: const Text('Flutter Store Screenshots'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.file_download_outlined),
-            tooltip: 'Export all screenshots',
-            onPressed: () => _exportAll(context),
-          ),
-        ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(kToolbarHeight),
           child: Container(
@@ -113,34 +131,47 @@ class _ScreenshotsHome extends StatelessWidget {
               children: [
                 DropdownButtonHideUnderline(
                   child: DropdownButton<int>(
-                    value: selectedLocaleIndex,
+                    value: widget.selectedLocaleIndex,
                     items: [
-                      for (int i = 0; i < locales.length; i++)
+                      for (int i = 0; i < widget.locales.length; i++)
                         DropdownMenuItem(
                           value: i,
-                          child: Text(locales[i].toLanguageTag()),
+                          child: Text(widget.locales[i].toLanguageTag()),
                         ),
                     ],
                     onChanged: (i) {
-                      if (i != null) onLocaleChanged(i);
+                      if (i != null) widget.onLocaleChanged(i);
                     },
                   ),
                 ),
                 const SizedBox(width: 16),
                 DropdownButtonHideUnderline(
                   child: DropdownButton<int>(
-                    value: selectedSetIndex,
+                    value: widget.selectedSetIndex,
                     items: [
-                      for (int i = 0; i < screenshotSets.length; i++)
+                      for (int i = 0; i < widget.screenshotSets.length; i++)
                         DropdownMenuItem(
                           value: i,
-                          child: Text(screenshotSets[i].name),
+                          child: Text(widget.screenshotSets[i].name),
                         ),
                     ],
                     onChanged: (i) {
-                      if (i != null) onSetChanged(i);
+                      if (i != null) widget.onSetChanged(i);
                     },
                   ),
+                ),
+                const Spacer(),
+                IconButton(
+                  icon: const Icon(Icons.folder_open_outlined),
+                  tooltip: 'Open screenshots folder in Finder',
+                  onPressed: _screenshotsDirExists
+                      ? _openScreenshotsFolder
+                      : null,
+                ),
+                IconButton(
+                  icon: const Icon(Icons.file_download_outlined),
+                  tooltip: 'Export all screenshots',
+                  onPressed: () => _exportAll(context),
                 ),
               ],
             ),
@@ -183,7 +214,9 @@ class _ScreenshotsHome extends StatelessWidget {
     required double previewHeight,
   }) {
     final resolvedLocale =
-        screenshot.locale ?? set.locale ?? locales[selectedLocaleIndex];
+        screenshot.locale ??
+        set.locale ??
+        widget.locales[widget.selectedLocaleIndex];
     final resolvedPlatform = screenshot.targetPlatform ?? set.targetPlatform;
     final resolvedSize = screenshot.size ?? set.size;
     assert(
@@ -192,7 +225,7 @@ class _ScreenshotsHome extends StatelessWidget {
     );
     final resolvedPixelDensity =
         screenshot.pixelDensity ?? set.pixelDensity ?? 1.0;
-    final resolvedTheme = screenshot.theme ?? set.theme ?? appTheme;
+    final resolvedTheme = screenshot.theme ?? set.theme ?? widget.appTheme;
 
     final previewWidth =
         previewHeight * (resolvedSize!.width / resolvedSize.height);
@@ -238,8 +271,8 @@ class _ScreenshotsHome extends StatelessWidget {
 
   Future<void> _exportAll(BuildContext context) async {
     final total =
-        locales.length *
-        screenshotSets.fold<int>(
+        widget.locales.length *
+        widget.screenshotSets.fold<int>(
           0,
           (sum, set) => sum + set.storeScreenshots.length,
         );
@@ -248,15 +281,15 @@ class _ScreenshotsHome extends StatelessWidget {
     if (!context.mounted) return;
 
     // Mutable capture state — updated before each screenshot render.
-    var captureLocale = locales.first;
+    var captureLocale = widget.locales.first;
     var captureSize =
-        (screenshotSets.first.storeScreenshots.first.size ??
-        screenshotSets.first.size)!;
+        (widget.screenshotSets.first.storeScreenshots.first.size ??
+        widget.screenshotSets.first.size)!;
     var capturePixelDensity = 1.0;
     TargetPlatform? capturePlatform;
     ThemeData? captureTheme;
     WidgetBuilder captureBuilder =
-        screenshotSets.first.storeScreenshots.first.builder;
+        widget.screenshotSets.first.storeScreenshots.first.builder;
     Widget Function(BuildContext, WidgetBuilder)? captureDecorator;
 
     final captureKey = GlobalKey();
@@ -318,12 +351,11 @@ class _ScreenshotsHome extends StatelessWidget {
     // Wait for the dialog (and its ScreenshotRender) to be built and painted.
     await WidgetsBinding.instance.endOfFrame;
 
-    final outputBase =
-        '${Directory.current.path}${Platform.pathSeparator}screenshots';
+    final outputBase = _outputBase;
 
     try {
-      for (final locale in locales) {
-        for (final set in screenshotSets) {
+      for (final locale in widget.locales) {
+        for (final set in widget.screenshotSets) {
           for (var i = 0; i < set.storeScreenshots.length; i++) {
             final screenshot = set.storeScreenshots[i];
 
@@ -337,7 +369,8 @@ class _ScreenshotsHome extends StatelessWidget {
             );
             final resolvedPixelDensity =
                 screenshot.pixelDensity ?? set.pixelDensity ?? 1.0;
-            final resolvedTheme = screenshot.theme ?? set.theme ?? appTheme;
+            final resolvedTheme =
+                screenshot.theme ?? set.theme ?? widget.appTheme;
 
             final rawDecorator = set.decorator;
             final boundDecorator = rawDecorator == null
@@ -414,6 +447,7 @@ class _ScreenshotsHome extends StatelessWidget {
         ),
       );
     }
+    await _checkScreenshotsDirExists();
   }
 
   static String _sanitizeSetName(String name) => name
