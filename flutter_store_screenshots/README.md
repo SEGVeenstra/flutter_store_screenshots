@@ -15,7 +15,7 @@ A Flutter tool for **composing, previewing, and exporting App Store & Google Pla
 - **Custom decorators** — bring your own `ScreenshotDecorator` to wrap each screenshot in a gradient background, device frame, marketing title, subtitle — whatever the store requires.
 - **Localised marketing copy** — `titleBuilder` / `subtitleBuilder` receive a `BuildContext` that already has the correct locale active, so `AppLocalizations.of(ctx)` just works.
 - **Bulk PNG export** — one button writes every locale × every set × every screenshot to `./screenshots/<set>/<locale>/` with descriptive file names (`01_login.png`, `02_home.png` …).
-- **Works alongside `device_frame`** — slot a `DeviceFrame` widget into your decorator to get pixel-perfect device mockups for free.
+- **Built-in device frames** — `framedDecorator` and `featureGraphicDecorator` wrap your content in pixel-perfect device mockups out of the box, powered by the bundled `device_frame` package.
 
 ---
 
@@ -34,8 +34,9 @@ Add the package to the `dependencies` of a dedicated screenshot app (typically k
 # pubspec.yaml
 dependencies:
   flutter_store_screenshots: ^0.0.1
-  device_frame: ^2.0.0          # optional but recommended
 ```
+
+> `device_frame` is bundled as a dependency of `flutter_store_screenshots`, so no separate entry is needed. You will still import it directly in your Dart files to reference `Devices.*` constants.
 
 Then run:
 
@@ -60,6 +61,7 @@ The entire tool is a single Flutter app. Your `main.dart` creates a `FlutterStor
 ### Minimal example
 
 ```dart
+import 'package:device_frame/device_frame.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_store_screenshots/flutter_store_screenshots.dart';
 
@@ -70,11 +72,10 @@ void main() {
     FlutterStoreScreenshotsApp(
       locales: const [Locale('en'), Locale('de')],
       screenshotSets: [
-        ScreenshotSet(
-          name: 'iOS Phone 6.7"',
-          targetPlatform: TargetPlatform.iOS,
-          size: const Size(430, 932),
-          pixelDensity: 3.0,
+        AppleScreenshotSet.iPhone67(
+          decorator: framedDecorator(
+            device: Devices.ios.iPhone16ProMax,
+          ),
           storeScreenshots: [
             StoreScreenshot(
               name: 'home',
@@ -174,6 +175,53 @@ A `ScreenshotDecorator` is a function that **owns the full canvas layout**. It r
 
 ---
 
+## Preset sets & built-in decorators
+
+`flutter_store_screenshots` ships with pre-configured `ScreenshotSet` subclasses for every major store format, and two decorator factory functions that produce polished, device-framed screenshots with no boilerplate.
+
+### `AppleScreenshotSet`
+
+| Constructor | Canvas (logical px) | Density | Physical px | Store target |
+|---|---|---|---|---|
+| `.iPhone69(...)` | 440 × 956 | 3× | 1320 × 2868 | App Store 6.9" iPhone |
+| `.iPhone67(...)` | 430 × 932 | 3× | 1290 × 2796 | App Store 6.7" iPhone |
+| `.iPadPro129(...)` | 1024 × 1366 | 2× | 2048 × 2732 | App Store iPad Pro 12.9" |
+
+### `AndroidScreenshotSet`
+
+| Constructor | Canvas (logical px) | Density | Physical px | Store target |
+|---|---|---|---|---|
+| `.phone(...)` | 412 × 892 | 2.625× | ≈1081 × 2341 | Google Play phone |
+| `.tablet7(...)` | 600 × 960 | 2× | 1200 × 1920 | Google Play 7" tablet |
+| `.tablet10(...)` | 800 × 1280 | 2× | 1600 × 2560 | Google Play 10" tablet |
+| `.featureGraphic(...)` | 1024 × 500 | 1× | 1024 × 500 | Google Play Feature Graphic |
+
+Each constructor accepts `decorator` (optional) and `storeScreenshots` (required).
+
+### `framedDecorator`
+
+Renders a gradient background, optional marketing title at the top, a `DeviceFrame` in the centre, and an optional subtitle at the bottom. Title and subtitle are sourced automatically from each `StoreScreenshot`'s `titleBuilder` / `subtitleBuilder`.
+
+```dart
+framedDecorator({
+  required DeviceInfo device,
+  Gradient? gradient,   // defaults to a neutral indigo gradient
+})
+```
+
+### `featureGraphicDecorator`
+
+Renders the Google Play Feature Graphic layout: marketing text on the left, device mockup on the right.
+
+```dart
+featureGraphicDecorator({
+  DeviceInfo? device,   // defaults to Devices.android.samsungGalaxyS25
+  Gradient? gradient,   // defaults to a dark-green gradient
+})
+```
+
+---
+
 ## Full example with device frames and localisation
 
 ```dart
@@ -192,60 +240,15 @@ void main() {
       localizationsDelegates: const [AppLocalizations.delegate],
       theme: ThemeData(colorSchemeSeed: Colors.indigo),
       screenshotSets: [
-        ScreenshotSet(
-          name: 'iOS Phone 6.7"',
-          targetPlatform: TargetPlatform.iOS,
-          size: const Size(430, 932),
-          pixelDensity: 3.0,
-          decorator: (ctx, builder, title, subtitle) {
-            return Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Color(0xFF1A237E), Color(0xFF7986CB)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-              ),
-              child: Column(
-                children: [
-                  if (title?.call(ctx) != null)
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(24, 48, 24, 0),
-                      child: Text(
-                        title!.call(ctx)!,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 32,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.all(20),
-                      child: DeviceFrame(
-                        device: Devices.ios.iPhone16ProMax,
-                        screen: Builder(builder: builder),
-                      ),
-                    ),
-                  ),
-                  if (subtitle?.call(ctx) != null)
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(24, 0, 24, 48),
-                      child: Text(
-                        subtitle!.call(ctx)!,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          color: Colors.white70,
-                          fontSize: 18,
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            );
-          },
+        AppleScreenshotSet.iPhone67(
+          decorator: framedDecorator(
+            device: Devices.ios.iPhone16ProMax,
+            gradient: const LinearGradient(
+              colors: [Color(0xFF1A237E), Color(0xFF7986CB)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
           storeScreenshots: [
             StoreScreenshot(
               name: 'login',
@@ -261,11 +264,38 @@ void main() {
             ),
           ],
         ),
+        AndroidScreenshotSet.phone(
+          decorator: framedDecorator(
+            device: Devices.android.samsungGalaxyS25,
+            gradient: const LinearGradient(
+              colors: [Color(0xFF1B5E20), Color(0xFF66BB6A)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+          storeScreenshots: [
+            // ... same screenshots
+          ],
+        ),
+        AndroidScreenshotSet.featureGraphic(
+          decorator: featureGraphicDecorator(),
+          storeScreenshots: [
+            StoreScreenshot(
+              name: 'feature_graphic',
+              titleBuilder: (_) => 'My App',
+              subtitleBuilder: (ctx) => AppLocalizations.of(ctx).screenshotFeatureTitle,
+              builder: (_) => const HomeScreen(),
+            ),
+          ],
+        ),
       ],
     ),
   );
 }
 ```
+
+> **Writing a fully custom decorator?** You can still pass any `ScreenshotDecorator` function to the `decorator` parameter — the preset classes are just a convenience. See [ScreenshotDecorator](#screenshotdecorator) above for the full API.
+
 
 ---
 
@@ -310,7 +340,7 @@ For `locale`:
 
 ## Tips
 
-**Reuse the same screens for every device** — define your screenshots once and share them across sets:
+**Reuse the same screens for every device** — define your screenshots once and pass the list to multiple preset sets:
 
 ```dart
 List<StoreScreenshot> _myScreenshots() => [
@@ -319,21 +349,24 @@ List<StoreScreenshot> _myScreenshots() => [
 ];
 
 screenshotSets: [
-  ScreenshotSet(name: 'iOS Phone', size: const Size(430, 932), storeScreenshots: _myScreenshots()),
-  ScreenshotSet(name: 'iPad',      size: const Size(1024, 1366), storeScreenshots: _myScreenshots()),
+  AppleScreenshotSet.iPhone67(decorator: myDecorator, storeScreenshots: _myScreenshots()),
+  AppleScreenshotSet.iPadPro129(decorator: myDecorator, storeScreenshots: _myScreenshots()),
+  AndroidScreenshotSet.phone(decorator: myDecorator, storeScreenshots: _myScreenshots()),
 ],
 ```
 
-**Google Play Feature Graphic** — the 1024×500 px landscape banner is just another `ScreenshotSet` with a custom decorator:
+**Google Play Feature Graphic** — use `AndroidScreenshotSet.featureGraphic` with the built-in `featureGraphicDecorator` for an instant branding layout (text left, device right):
 
 ```dart
-ScreenshotSet(
-  name: 'Google Play Feature Graphic',
-  size: const Size(1024, 500),
-  pixelDensity: 1.0,
-  decorator: myFeatureGraphicDecorator,
+AndroidScreenshotSet.featureGraphic(
+  decorator: featureGraphicDecorator(),
   storeScreenshots: [
-    StoreScreenshot(name: 'feature_graphic', builder: (_) => const HomeScreen()),
+    StoreScreenshot(
+      name: 'feature_graphic',
+      titleBuilder: (_) => 'My App',
+      subtitleBuilder: (ctx) => AppLocalizations.of(ctx).featureTagline,
+      builder: (_) => const HomeScreen(),
+    ),
   ],
 ),
 ```
