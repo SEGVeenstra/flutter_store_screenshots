@@ -388,25 +388,28 @@ void main() {
           ],
         ),
 
-        // ── Panoramic canvas ──────────────────────────────────────────────────
+        // ── Panoramic canvas — fan of phones ─────────────────────────────────
         //
-        // panoramicCanvas() generates one StoreScreenshot per slice. Each
-        // screenshot renders the SAME panoramaBuilder but clipped to a
-        // different horizontal window.
+        // Three phones arranged like a hand of cards spread across 3 screenshots.
         //
-        // Here we use a Stack instead of a Row so that DeviceFrame widgets can
-        // be Positioned at slice *boundaries* — meaning half the device is
-        // visible in screenshot N and the other half in screenshot N+1.
+        //   screenshot 0     │  screenshot 1   │  screenshot 2
+        //   ─────────────────┼─────────────────┼─────────────────
+        //                 ╱──┼──╲           ╱──┼──╲
+        //              ╱ left ╲ │        ╱right╲  │
+        //           ╱  (Login) ╲│      ╱(Settings)╲
+        //                       │  ┌─────────┐    │
+        //                       │  │ center  │    │
+        //                       │  │ (Home)  │    │
+        //                       │  └─────────┘    │
         //
-        //   slice 0 │ slice 1 │ slice 2
-        //   ────────┼─────────┼────────
-        //    text   │  text   │  text
-        //        ╔══╪══╗  ╔══╪══╗
-        //        ║dev0║  ║dev1║
-        //        ╚══╪══╝  ╚══╪══╝
-        //
-        // The gradient background is seamless across all slices because it is
-        // painted once on the full panorama width.
+        // • Left phone   — centred on the 0→1 boundary, rotated −17°.
+        //   Half visible in screenshot 0, half in screenshot 1.
+        // • Right phone  — centred on the 1→2 boundary, rotated +17°.
+        //   Half visible in screenshot 1, half in screenshot 2.
+        // • Center phone — centred in slice 1, upright, painted last (on top).
+        //   The rotation of the side phones makes their visual footprint even
+        //   wider, so they bleed further into the adjacent screenshot than the
+        //   layout box alone suggests.
         AppleScreenshotSet.iPhone67(
           storeScreenshots: panoramicCanvas(
             count: 3,
@@ -419,15 +422,18 @@ void main() {
               final sliceW = size.width / 3;
               final loc = AppLocalizations.of(context);
 
-              // Device frame dimensions. The DeviceFrame widget renders inside
-              // the SizedBox we give it, so we control the size explicitly.
-              // ~48% width-to-height ratio matches an iPhone incl. its frame.
-              final deviceH = size.height * 0.82;
-              final deviceW = deviceH * 0.48;
+              // Center phone: largest, upright, prominent.
+              final centerH = size.height * 0.78;
+              final centerW = centerH * 0.48;
 
-              // Vertical centre for both devices — staggered slightly so they
-              // don't look like a perfectly flat row.
-              final centerY = (size.height - deviceH) / 2;
+              // Side phones: slightly smaller, rotated outward to create depth.
+              final sideH = size.height * 0.64;
+              final sideW = sideH * 0.48;
+
+              // Side phones sit higher on the canvas; center phone sits lower.
+              // This vertical stagger reinforces the fan / depth illusion.
+              final sideCy = size.height * 0.42;
+              final centerCy = size.height * 0.56;
 
               return Stack(
                 fit: StackFit.expand,
@@ -436,18 +442,14 @@ void main() {
                   Container(
                     decoration: const BoxDecoration(
                       gradient: LinearGradient(
-                        begin: Alignment.centerLeft,
-                        end: Alignment.centerRight,
-                        colors: [
-                          Color(0xFF1A237E),
-                          Color(0xFF1565C0),
-                          Color(0xFF0D47A1),
-                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [Color(0xFF1A237E), Color(0xFF1565C0), Color(0xFF42A5F5)],
                       ),
                     ),
                   ),
 
-                  // ── Marketing text, one block centred inside each slice ─────
+                  // ── Title per slice ─────────────────────────────────────────
                   for (final (i, title) in [
                     (0, loc.screenshotLoginTitle),
                     (1, loc.screenshotHomeTitle),
@@ -469,30 +471,49 @@ void main() {
                       ),
                     ),
 
-                  // ── Device 0: Login — centred on the 0→1 boundary ──────────
-                  //
-                  // Left half visible in screenshot 0, right half in screenshot 1.
+                  // ── Left phone: Login, straddles 0→1 boundary ──────────────
+                  // Painted first → behind both other phones in z-order.
                   Positioned(
-                    left: sliceW - deviceW / 2,
-                    top: centerY - 32, // slightly above centre
-                    width: deviceW,
-                    height: deviceH,
-                    child: DeviceFrame(
-                      device: Devices.ios.iPhone16ProMax,
-                      screen: ScreenshotContent(
-                        builder: (_) => const LoginScreen(),
+                    left: sliceW - sideW / 2,
+                    top: sideCy - sideH / 2,
+                    width: sideW,
+                    height: sideH,
+                    child: Transform.rotate(
+                      angle: -0.30, // ≈ −17°
+                      child: DeviceFrame(
+                        device: Devices.ios.iPhone16ProMax,
+                        screen: ScreenshotContent(
+                          builder: (_) => const LoginScreen(),
+                        ),
                       ),
                     ),
                   ),
 
-                  // ── Device 1: Home — centred on the 1→2 boundary ───────────
-                  //
-                  // Left half visible in screenshot 1, right half in screenshot 2.
+                  // ── Right phone: Settings, straddles 1→2 boundary ──────────
+                  // Painted second → behind center phone.
                   Positioned(
-                    left: 2 * sliceW - deviceW / 2,
-                    top: centerY + 32, // slightly below centre (staggered)
-                    width: deviceW,
-                    height: deviceH,
+                    left: 2 * sliceW - sideW / 2,
+                    top: sideCy - sideH / 2,
+                    width: sideW,
+                    height: sideH,
+                    child: Transform.rotate(
+                      angle: 0.30, // ≈ +17°
+                      child: DeviceFrame(
+                        device: Devices.ios.iPhone16ProMax,
+                        screen: ScreenshotContent(
+                          builder: (_) => const SettingsScreen(),
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  // ── Center phone: Home, centered in slice 1 ────────────────
+                  // Painted last → on top of both side phones.
+                  Positioned(
+                    left: size.width / 2 - centerW / 2,
+                    top: centerCy - centerH / 2,
+                    width: centerW,
+                    height: centerH,
                     child: DeviceFrame(
                       device: Devices.ios.iPhone16ProMax,
                       screen: ScreenshotContent(
