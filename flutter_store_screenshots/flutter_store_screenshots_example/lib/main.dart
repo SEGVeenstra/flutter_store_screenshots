@@ -388,6 +388,124 @@ void main() {
           ],
         ),
 
+        // ── Panoramic canvas ──────────────────────────────────────────────────
+        //
+        // panoramicCanvas() generates one StoreScreenshot per slice. Each
+        // screenshot renders the SAME panoramaBuilder but clipped to a
+        // different horizontal window.
+        //
+        // Here we use a Stack instead of a Row so that DeviceFrame widgets can
+        // be Positioned at slice *boundaries* — meaning half the device is
+        // visible in screenshot N and the other half in screenshot N+1.
+        //
+        //   slice 0 │ slice 1 │ slice 2
+        //   ────────┼─────────┼────────
+        //    text   │  text   │  text
+        //        ╔══╪══╗  ╔══╪══╗
+        //        ║dev0║  ║dev1║
+        //        ╚══╪══╝  ╚══╪══╝
+        //
+        // The gradient background is seamless across all slices because it is
+        // painted once on the full panorama width.
+        AppleScreenshotSet.iPhone67(
+          storeScreenshots: panoramicCanvas(
+            count: 3,
+            names: ['panoramic_login', 'panoramic_home', 'panoramic_settings'],
+            panoramaBuilder: (context) {
+              // MediaQuery.sizeOf returns the full panorama size here:
+              //   width  = 3 × 430 = 1290 logical px
+              //   height = 932 logical px
+              final size = MediaQuery.sizeOf(context);
+              final sliceW = size.width / 3;
+              final loc = AppLocalizations.of(context);
+
+              // Device frame dimensions. The DeviceFrame widget renders inside
+              // the SizedBox we give it, so we control the size explicitly.
+              // ~48% width-to-height ratio matches an iPhone incl. its frame.
+              final deviceH = size.height * 0.82;
+              final deviceW = deviceH * 0.48;
+
+              // Vertical centre for both devices — staggered slightly so they
+              // don't look like a perfectly flat row.
+              final centerY = (size.height - deviceH) / 2;
+
+              return Stack(
+                fit: StackFit.expand,
+                children: [
+                  // ── Seamless gradient across the full panorama ──────────────
+                  Container(
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.centerLeft,
+                        end: Alignment.centerRight,
+                        colors: [
+                          Color(0xFF1A237E),
+                          Color(0xFF1565C0),
+                          Color(0xFF0D47A1),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  // ── Marketing text, one block centred inside each slice ─────
+                  for (final (i, title) in [
+                    (0, loc.screenshotLoginTitle),
+                    (1, loc.screenshotHomeTitle),
+                    (2, loc.screenshotSettingsTitle),
+                  ])
+                    Positioned(
+                      left: i * sliceW + 28,
+                      width: sliceW - 56,
+                      top: 72,
+                      child: Text(
+                        title,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 26,
+                          fontWeight: FontWeight.bold,
+                          height: 1.2,
+                        ),
+                      ),
+                    ),
+
+                  // ── Device 0: Login — centred on the 0→1 boundary ──────────
+                  //
+                  // Left half visible in screenshot 0, right half in screenshot 1.
+                  Positioned(
+                    left: sliceW - deviceW / 2,
+                    top: centerY - 32, // slightly above centre
+                    width: deviceW,
+                    height: deviceH,
+                    child: DeviceFrame(
+                      device: Devices.ios.iPhone16ProMax,
+                      screen: ScreenshotContent(
+                        builder: (_) => const LoginScreen(),
+                      ),
+                    ),
+                  ),
+
+                  // ── Device 1: Home — centred on the 1→2 boundary ───────────
+                  //
+                  // Left half visible in screenshot 1, right half in screenshot 2.
+                  Positioned(
+                    left: 2 * sliceW - deviceW / 2,
+                    top: centerY + 32, // slightly below centre (staggered)
+                    width: deviceW,
+                    height: deviceH,
+                    child: DeviceFrame(
+                      device: Devices.ios.iPhone16ProMax,
+                      screen: ScreenshotContent(
+                        builder: (_) => const HomeScreen(),
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        ),
+
         // ── Per-screenshot pinned locales ─────────────────────────────────────
         //
         // Each StoreScreenshot can pin its own locale. The BuildContext passed
