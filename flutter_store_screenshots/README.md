@@ -2,84 +2,45 @@
 
 ![Flutter Store Screenshots preview](doc/preview.png)
 
-A Flutter tool for **composing, previewing, and exporting App Store & Google Play screenshots** — all from a single Dart entry point, with full localisation support, device frames, and one-click bulk export.
+Compose, preview, and export App Store & Google Play screenshots from a single Flutter app — with localisation support, device frames, and one-click bulk export.
 
 ---
 
-## Features
+## Installation
 
-- **Live preview** — run the tool as a regular Flutter desktop/web app and see your screenshots rendered in real time.
-- **Locale switcher** — flip between every locale your app supports with a dropdown, without restarting.
-- **Multiple screenshot sets** — configure separate sets for each device size (iPhone 6.7", Android phone, iPad, tablet, feature graphic …) and switch between them instantly.
-- **Config inheritance** — set defaults at the app level, override them per set, override again per screenshot. Only set what differs.
-- **Custom decorators** — bring your own `ScreenshotDecorator` to wrap each screenshot in a gradient background, device frame, marketing title, subtitle — whatever the store requires.
-- **Localised marketing copy** — `titleBuilder` / `subtitleBuilder` receive a `BuildContext` that already has the correct locale active, so `AppLocalizations.of(ctx)` just works.
-- **Bulk PNG export** — one button writes every locale × every set × every screenshot to `./screenshots/<set>/<locale>/` with descriptive file names (`01_login.png`, `02_home.png` …).
-- **Built-in device frames** — `framedDecorator` and `featureGraphicDecorator` wrap your content in pixel-perfect device mockups out of the box, powered by the bundled `device_frame` package.
-
----
-
-## Getting started
-
-### Prerequisites
-
-- Flutter **3.x** or later (desktop or web target recommended for the preview tool)
-- Dart SDK **^3.0.0**
-
-### Installation
-
-Add the package to the `dependencies` of a dedicated screenshot app (typically kept at `<your_repo>/store_screenshots/` or as `<your_package>_example/`):
+Create a dedicated screenshot app (e.g. `store_screenshots/`) and add the dependency:
 
 ```yaml
-# pubspec.yaml
 dependencies:
-  flutter_store_screenshots: ^0.0.1
+  flutter_store_screenshots: ^0.1.0
+  my_app:
+    path: ../my_app  # import your app's widgets and localisation
 ```
-
-> `device_frame` is bundled as a dependency of `flutter_store_screenshots`, so no separate entry is needed. You will still import it directly in your Dart files to reference `Devices.*` constants.
-
-Then run:
-
-```bash
-flutter pub get
-```
-
-> **Tip:** Keep your screenshot project separate from your main app so it never ships to end-users. Import your app's widgets and localisation as a path dependency:
->
-> ```yaml
-> dependencies:
->   my_app:
->     path: ../my_app
-> ```
 
 ---
 
-## Usage
-
-The entire tool is a single Flutter app. Your `main.dart` creates a `FlutterStoreScreenshotsApp` widget and passes it your screens, locales, and screenshot sets.
-
-### Minimal example
+## Quick start
 
 ```dart
 import 'package:device_frame/device_frame.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_store_screenshots/flutter_store_screenshots.dart';
-
-import 'screens/home_screen.dart';
 
 void main() {
   runApp(
     FlutterStoreScreenshotsApp(
       locales: const [Locale('en'), Locale('de')],
+      localizationsDelegates: const [AppLocalizations.delegate],
       screenshotSets: [
         AppleScreenshotSet.iPhone67(
-          decorator: framedDecorator(
-            device: Devices.ios.iPhone16ProMax,
-          ),
           storeScreenshots: [
             StoreScreenshot(
               name: 'home',
-              builder: (_) => const HomeScreen(),
+              builder: framedCanvas(
+                device: Devices.ios.iPhone16ProMax,
+                child: (_) => const HomeScreen(),
+                title: (ctx) => AppLocalizations.of(ctx).screenshotHomeTitle,
+              ),
             ),
           ],
         ),
@@ -89,228 +50,165 @@ void main() {
 }
 ```
 
-Run it on macOS, Linux, Windows, or in Chrome:
+Run on macOS to preview live:
 
 ```bash
-flutter run -d macos   # or: -d chrome
+flutter run -d macos
 ```
+
+Click **↓** in the toolbar to export. Files land in `screenshots/<set>/<locale>/01_home.png`.
 
 ---
 
 ## Core concepts
 
-### `FlutterStoreScreenshotsApp`
+### `StoreScreenshot`
 
-The root widget. It renders the preview UI (toolbar + scrollable canvas) and orchestrates export.
+The `builder` owns the **full screenshot canvas** — background, text, device frame, everything. Use the built-in canvas helpers or build it yourself.
 
-| Parameter | Type | Description |
-|---|---|---|
-| `locales` | `List<Locale>` | All locales your app supports. Populates the locale dropdown. |
-| `screenshotSets` | `List<ScreenshotSet>` | The device/format configurations to preview. |
-| `localizationsDelegates` | `List<LocalizationsDelegate>?` | Your app's generated ARB delegates (e.g. `AppLocalizations.delegate`). Forwarded to `MaterialApp` so `Localizations.override` works correctly inside screenshots. |
-| `theme` | `ThemeData?` | App-level default theme. Can be overridden by a set or individual screenshot. |
+```dart
+StoreScreenshot(
+  name: 'home',
+  builder: framedCanvas(
+    device: Devices.ios.iPhone16ProMax,
+    child: (_) => const HomeScreen(),
+    title: (ctx) => AppLocalizations.of(ctx).homeTitle,
+    subtitle: (ctx) => AppLocalizations.of(ctx).homeSubtitle,
+  ),
+)
+```
 
----
+Only `builder` is required. `name`, `locale`, `size`, `pixelDensity`, `theme`, `targetPlatform`, and `captureDelay` are all optional and inherited from the parent `ScreenshotSet` when not set.
+
+### `ScreenshotContent`
+
+Use `ScreenshotContent` when building a canvas manually — it wraps your app screen in a fresh `Navigator` so no back button appears in `AppBar`s:
+
+```dart
+StoreScreenshot(
+  name: 'home',
+  builder: (context) => Stack(
+    children: [
+      const MyBackground(),
+      Center(
+        child: DeviceFrame(
+          device: Devices.ios.iPhone16ProMax,
+          screen: ScreenshotContent(builder: (_) => const HomeScreen()),
+        ),
+      ),
+    ],
+  ),
+)
+```
 
 ### `ScreenshotSet`
 
-A **named group** of screenshots that share a common configuration. Think of one set per device/format combination you need to submit to the store.
-
-| Parameter | Type | Description |
-|---|---|---|
-| `name` | `String` | Display name shown in the set selector (e.g. `'iOS Phone 6.7"'`). |
-| `targetPlatform` | `TargetPlatform?` | Platform injected into the resolved theme for all screenshots in this set. |
-| `size` | `Size?` | Logical pixel size (canvas dimensions). At least one of `ScreenshotSet.size` or `StoreScreenshot.size` must be provided. |
-| `pixelDensity` | `double?` | Device pixel ratio injected via `MediaQuery`. |
-| `theme` | `ThemeData?` | Overrides the app-level theme for this set. |
-| `decorator` | `ScreenshotDecorator?` | Applies a shared visual wrapper (background, device frame, text) to every screenshot in the set. |
-| `storeScreenshots` | `List<StoreScreenshot>` | The individual screenshots belonging to this set. |
+Groups screenshots that share a canvas size and platform. Use the preset subclasses or construct one directly. Settings here serve as defaults for every `StoreScreenshot` in the set.
 
 ---
 
-### `StoreScreenshot`
-
-Configuration for **a single screenshot**. Every field except `builder` is optional; missing values are inherited from the parent `ScreenshotSet`, then from `FlutterStoreScreenshotsApp`.
-
-| Parameter | Type | Description |
-|---|---|---|
-| `name` | `String?` | Used as a suffix in the exported file name (e.g. `'login'` → `01_login.png`). |
-| `builder` | `WidgetBuilder` | **Required.** Returns the app screen widget. |
-| `titleBuilder` | `String? Function(BuildContext)?` | Returns a marketing title string. The `BuildContext` has the correct locale, so `AppLocalizations.of(ctx)` returns the right language. |
-| `subtitleBuilder` | `String? Function(BuildContext)?` | Same as `titleBuilder` but for the subtitle. |
-| `locale` | `Locale?` | Overrides the set and app-level locale for this screenshot only. |
-| `targetPlatform` | `TargetPlatform?` | Overrides the set-level platform. |
-| `size` | `Size?` | Overrides the set-level canvas size. |
-| `pixelDensity` | `double?` | Overrides the set-level pixel density. |
-| `theme` | `ThemeData?` | Overrides the set-level theme. |
-
----
-
-### `ScreenshotDecorator`
-
-```dart
-typedef ScreenshotDecorator =
-    Widget Function(
-      BuildContext context,
-      WidgetBuilder contentBuilder,
-      String? Function(BuildContext)? titleBuilder,
-      String? Function(BuildContext)? subtitleBuilder,
-    );
-```
-
-A `ScreenshotDecorator` is a function that **owns the full canvas layout**. It receives:
-
-- `context` — build context at canvas level. `MediaQuery.of(context).size` equals the configured canvas size.
-- `contentBuilder` — the raw app-screen builder. **Pass this to a `DeviceFrame`** (or any wrapper widget) so the frame can inject the correct inner `MediaQuery` for the app content:
-  ```dart
-  DeviceFrame(
-    device: Devices.ios.iPhone16ProMax,
-    screen: Builder(builder: contentBuilder),
-  )
-  ```
-- `titleBuilder` / `subtitleBuilder` — call with `context` to get the localised string:
-  ```dart
-  final title = titleBuilder?.call(context);
-  ```
-
----
-
-## Preset sets & built-in decorators
-
-`flutter_store_screenshots` ships with pre-configured `ScreenshotSet` subclasses for every major store format, and two decorator factory functions that produce polished, device-framed screenshots with no boilerplate.
+## Preset sets
 
 ### `AppleScreenshotSet`
 
-| Constructor | Canvas (logical px) | Density | Physical px | Store target |
-|---|---|---|---|---|
-| `.iPhone69(...)` | 440 × 956 | 3× | 1320 × 2868 | App Store 6.9" iPhone |
-| `.iPhone67(...)` | 430 × 932 | 3× | 1290 × 2796 | App Store 6.7" iPhone |
-| `.iPadPro129(...)` | 1024 × 1366 | 2× | 2048 × 2732 | App Store iPad Pro 12.9" |
+| Constructor | Output size | Store target |
+|---|---|---|
+| `.iPhone69(...)` | 1320 × 2868 px | App Store 6.9" iPhone |
+| `.iPhone67(...)` | 1290 × 2796 px | App Store 6.7" iPhone |
+| `.iPadPro129(...)` | 2048 × 2732 px | App Store iPad Pro 12.9" |
 
 ### `AndroidScreenshotSet`
 
-| Constructor | Canvas (logical px) | Density | Physical px | Store target |
-|---|---|---|---|---|
-| `.phone(...)` | 412 × 892 | 2.625× | ≈1081 × 2341 | Google Play phone |
-| `.tablet7(...)` | 600 × 960 | 2× | 1200 × 1920 | Google Play 7" tablet |
-| `.tablet10(...)` | 800 × 1280 | 2× | 1600 × 2560 | Google Play 10" tablet |
-| `.featureGraphic(...)` | 1024 × 500 | 1× | 1024 × 500 | Google Play Feature Graphic |
+| Constructor | Output size | Store target |
+|---|---|---|
+| `.phone(...)` | ≈1081 × 2341 px | Google Play phone |
+| `.tablet7(...)` | 1200 × 1920 px | Google Play 7" tablet |
+| `.tablet10(...)` | 1600 × 2560 px | Google Play 10" tablet |
+| `.featureGraphic(...)` | 1024 × 500 px | Google Play Feature Graphic |
 
-Each constructor accepts `decorator` (optional) and `storeScreenshots` (required).
-
-### `framedDecorator`
-
-Renders a gradient background, optional marketing title at the top, a `DeviceFrame` in the centre, and an optional subtitle at the bottom. Title and subtitle are sourced automatically from each `StoreScreenshot`'s `titleBuilder` / `subtitleBuilder`.
-
-```dart
-framedDecorator({
-  required DeviceInfo device,
-  Gradient? gradient,   // defaults to a neutral indigo gradient
-})
-```
-
-### `featureGraphicDecorator`
-
-Renders the Google Play Feature Graphic layout: marketing text on the left, device mockup on the right.
-
-```dart
-featureGraphicDecorator({
-  DeviceInfo? device,   // defaults to Devices.android.samsungGalaxyS25
-  Gradient? gradient,   // defaults to a dark-green gradient
-})
-```
+Each preset sets `size`, `pixelDensity`, and `targetPlatform` automatically. Only `storeScreenshots` is required (plus an optional `captureDelay`).
 
 ---
 
-## Full example with device frames and localisation
+## Built-in canvas helpers
+
+### `framedCanvas`
+
+Returns a `WidgetBuilder` for use as `StoreScreenshot.builder`. Renders a gradient background, a `DeviceFrame` in the centre, and optional marketing text above/below.
 
 ```dart
-import 'package:device_frame/device_frame.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_store_screenshots/flutter_store_screenshots.dart';
+builder: framedCanvas(
+  device: Devices.ios.iPhone16ProMax,
+  child: (_) => const HomeScreen(),
+  title: (ctx) => AppLocalizations.of(ctx).homeTitle,
+  subtitle: (ctx) => AppLocalizations.of(ctx).homeSubtitle,
+  gradient: const LinearGradient(colors: [Color(0xFF1A237E), Color(0xFF7986CB)]),
+)
+```
 
-import 'l10n/app_localizations.dart';
-import 'screens/home_screen.dart';
-import 'screens/login_screen.dart';
+### `featureGraphicCanvas`
 
-void main() {
-  runApp(
-    FlutterStoreScreenshotsApp(
-      locales: const [Locale('en'), Locale('de'), Locale('nl')],
-      localizationsDelegates: const [AppLocalizations.delegate],
-      theme: ThemeData(colorSchemeSeed: Colors.indigo),
-      screenshotSets: [
-        AppleScreenshotSet.iPhone67(
-          decorator: framedDecorator(
-            device: Devices.ios.iPhone16ProMax,
-            gradient: const LinearGradient(
-              colors: [Color(0xFF1A237E), Color(0xFF7986CB)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-          storeScreenshots: [
-            StoreScreenshot(
-              name: 'login',
-              titleBuilder: (ctx) => AppLocalizations.of(ctx).screenshotLoginTitle,
-              subtitleBuilder: (ctx) => AppLocalizations.of(ctx).screenshotLoginSubtitle,
-              builder: (_) => const LoginScreen(),
-            ),
-            StoreScreenshot(
-              name: 'home',
-              titleBuilder: (ctx) => AppLocalizations.of(ctx).screenshotHomeTitle,
-              subtitleBuilder: (ctx) => AppLocalizations.of(ctx).screenshotHomeSubtitle,
-              builder: (_) => const HomeScreen(),
-            ),
-          ],
-        ),
-        AndroidScreenshotSet.phone(
-          decorator: framedDecorator(
-            device: Devices.android.samsungGalaxyS25,
-            gradient: const LinearGradient(
-              colors: [Color(0xFF1B5E20), Color(0xFF66BB6A)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-          storeScreenshots: [
-            // ... same screenshots
-          ],
-        ),
-        AndroidScreenshotSet.featureGraphic(
-          decorator: featureGraphicDecorator(),
-          storeScreenshots: [
-            StoreScreenshot(
-              name: 'feature_graphic',
-              titleBuilder: (_) => 'My App',
-              subtitleBuilder: (ctx) => AppLocalizations.of(ctx).screenshotFeatureTitle,
-              builder: (_) => const HomeScreen(),
-            ),
-          ],
-        ),
-      ],
+For the Google Play Feature Graphic (1024×500 px). Text on the left, device mockup on the right.
+
+```dart
+AndroidScreenshotSet.featureGraphic(
+  storeScreenshots: [
+    StoreScreenshot(
+      name: 'feature_graphic',
+      builder: featureGraphicCanvas(
+        child: (_) => const HomeScreen(),
+        title: (ctx) => AppLocalizations.of(ctx).featureTitle,
+        subtitle: (ctx) => AppLocalizations.of(ctx).featureSubtitle,
+      ),
     ),
-  );
-}
+  ],
+)
 ```
 
-> **Writing a fully custom decorator?** You can still pass any `ScreenshotDecorator` function to the `decorator` parameter — the preset classes are just a convenience. See [ScreenshotDecorator](#screenshotdecorator) above for the full API.
+### `panoramicCanvas`
 
+Splits a wide layout across multiple consecutive screenshots that form a seamless panorama. Returns a `List<StoreScreenshot>`.
+
+```dart
+AppleScreenshotSet.iPhone67(
+  storeScreenshots: panoramicCanvas(
+    count: 3,
+    names: ['discover', 'track', 'share'],
+    panoramaBuilder: (context) {
+      final w = MediaQuery.sizeOf(context).width; // full combined width
+      return Row(
+        children: [
+          SizedBox(width: w / 3, child: const DiscoverScreen()),
+          SizedBox(width: w / 3, child: const TrackScreen()),
+          SizedBox(width: w / 3, child: const ShareScreen()),
+        ],
+      );
+    },
+  ),
+)
+```
 
 ---
 
-## Exporting screenshots
+## `captureDelay`
 
-Click the **download icon** (↓) in the toolbar to export every locale × every set × every screenshot at once. Files are written to:
+Set on a `ScreenshotSet` or individual `StoreScreenshot` to wait before capturing. Useful when screens have animations or network images that need time to settle:
 
+```dart
+StoreScreenshot(
+  name: 'home',
+  captureDelay: const Duration(milliseconds: 800),
+  builder: framedCanvas(
+    device: Devices.ios.iPhone16ProMax,
+    child: (_) => const HomeScreen(),
+  ),
+)
+          child: Text(title(context) ?? '', textAlign: TextAlign.center),
+        ),
+    ],
+  );
+};
 ```
-<project_root>/screenshots/<set_name>/<locale>/
-  01_login.png
-  02_home.png
-  ...
-```
-
-Once the export is complete, click the **folder icon** to open the output directory in Finder / Explorer.
 
 > The export runs entirely on the Flutter rendering engine — no external tools, simulators, or screenshot drivers required.
 
