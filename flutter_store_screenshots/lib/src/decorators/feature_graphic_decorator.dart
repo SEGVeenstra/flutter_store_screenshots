@@ -1,9 +1,9 @@
 import 'package:device_frame/device_frame.dart';
 import 'package:flutter/material.dart';
 
-import '../models/screenshot_set.dart';
+import '../widgets/screenshot_content.dart';
 
-/// Default gradient used by [featureGraphicDecorator] when no [gradient] is
+/// Default gradient used by [featureGraphicCanvas] when no [gradient] is
 /// provided.
 const _defaultGradient = LinearGradient(
   begin: Alignment.centerLeft,
@@ -11,7 +11,7 @@ const _defaultGradient = LinearGradient(
   colors: [Color(0xFF1B5E20), Color(0xFF2E7D32)],
 );
 
-/// Returns a [ScreenshotDecorator] for a **Google Play Feature Graphic**
+/// Returns a [WidgetBuilder] for a **Google Play Feature Graphic**
 /// (1024×500 px landscape banner).
 ///
 /// The layout places marketing text on the left and a device mockup on the
@@ -25,45 +25,35 @@ const _defaultGradient = LinearGradient(
 /// └──────────────────────────────────────────┘
 /// ```
 ///
-/// - [device] — the [DeviceInfo] used for the right-side device mockup.
-///   Defaults to `Devices.android.samsungGalaxyS25`.
-/// - [gradient] — background gradient. Defaults to a dark-green gradient if
-///   omitted.
+/// Use this as [StoreScreenshot.builder]:
 ///
-/// The title and subtitle are sourced from each [StoreScreenshot]'s
-/// `titleBuilder` / `subtitleBuilder` and are automatically passed in by the
-/// framework — no extra wiring is required.
-///
-/// ## Example
 /// ```dart
-/// AndroidScreenshotSet.featureGraphic(
-///   decorator: featureGraphicDecorator(
-///     gradient: LinearGradient(
-///       colors: [Color(0xFF0D47A1), Color(0xFF1565C0)],
-///     ),
+/// StoreScreenshot(
+///   name: 'feature_graphic',
+///   builder: featureGraphicCanvas(
+///     child: (_) => HomeScreen(),
+///     title: (ctx) => AppLocalizations.of(ctx).featureTitle,
+///     subtitle: (ctx) => AppLocalizations.of(ctx).featureSubtitle,
 ///   ),
-///   storeScreenshots: [
-///     StoreScreenshot(
-///       name: 'feature_graphic',
-///       titleBuilder: (ctx) => AppLocalizations.of(ctx).featureTitle,
-///       subtitleBuilder: (ctx) => AppLocalizations.of(ctx).featureSubtitle,
-///       builder: (_) => const HomeScreen(),
-///     ),
-///   ],
 /// )
 /// ```
-ScreenshotDecorator featureGraphicDecorator({
+///
+/// - [device] — the [DeviceInfo] for the right-side device mockup.
+///   Defaults to `Devices.android.samsungGalaxyS25`.
+/// - [child] — builder for the app screen rendered inside the device frame.
+/// - [title] — optional localized title shown on the left.
+/// - [subtitle] — optional localized subtitle shown below the title.
+/// - [gradient] — background gradient. Defaults to a dark-green gradient.
+WidgetBuilder featureGraphicCanvas({
   DeviceInfo? device,
+  required WidgetBuilder child,
+  String? Function(BuildContext)? title,
+  String? Function(BuildContext)? subtitle,
   Gradient? gradient,
 }) {
-  return (
-    BuildContext context,
-    WidgetBuilder contentBuilder,
-    String? Function(BuildContext)? titleBuilder,
-    String? Function(BuildContext)? subtitleBuilder,
-  ) {
-    final title = titleBuilder?.call(context);
-    final subtitle = subtitleBuilder?.call(context);
+  return (BuildContext context) {
+    final titleText = title?.call(context);
+    final subtitleText = subtitle?.call(context);
     final resolvedDevice = device ?? Devices.android.samsungGalaxyS25;
 
     return Container(
@@ -78,9 +68,9 @@ ScreenshotDecorator featureGraphicDecorator({
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (title != null)
+                  if (titleText != null)
                     Text(
-                      title,
+                      titleText,
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 40,
@@ -89,10 +79,10 @@ ScreenshotDecorator featureGraphicDecorator({
                         letterSpacing: -0.5,
                       ),
                     ),
-                  if (subtitle != null) ...[
+                  if (subtitleText != null) ...[
                     const SizedBox(height: 16),
                     Text(
-                      subtitle,
+                      subtitleText,
                       style: const TextStyle(
                         color: Colors.white70,
                         fontSize: 20,
@@ -112,7 +102,7 @@ ScreenshotDecorator featureGraphicDecorator({
               padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
               child: DeviceFrame(
                 device: resolvedDevice,
-                screen: Builder(builder: contentBuilder),
+                screen: ScreenshotContent(builder: child),
               ),
             ),
           ),

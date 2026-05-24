@@ -5,3 +5,4 @@ export 'src/models/screenshot_set.dart';
 export 'src/models/store_screenshot.dart';
 export 'src/presets/android_screenshot_set.dart';
 export 'src/presets/apple_screenshot_set.dart';
+export 'src/widgets/screenshot_content.dart';

@@ -2,26 +2,6 @@ import 'package:flutter/material.dart';
 
 import 'store_screenshot.dart';
 
-/// Signature for a function that wraps the raw app-content builder inside a
-/// fully composed screenshot canvas (background, device frame, slogans, etc.).
-///
-/// - [context] is the build context at canvas level (MediaQuery.size equals
-///   the canvas size from [ScreenshotSet.size]).
-/// - [contentBuilder] is the raw app-screen builder. Pass it directly to a
-///   device-frame widget (e.g. `DeviceFrame(screen: Builder(builder: contentBuilder))`)
-///   so the frame can inject the correct inner [MediaQuery] for the app content.
-/// - [titleBuilder] and [subtitleBuilder] come from
-///   [StoreScreenshot.titleBuilder] / [StoreScreenshot.subtitleBuilder].
-///   Call them with [context] to get the localized string, e.g.
-///   `titleBuilder?.call(context)`.
-typedef ScreenshotDecorator =
-    Widget Function(
-      BuildContext context,
-      WidgetBuilder contentBuilder,
-      String? Function(BuildContext)? titleBuilder,
-      String? Function(BuildContext)? subtitleBuilder,
-    );
-
 /// A named group of store screenshots that share common configuration.
 ///
 /// Values set on this class serve as defaults for all [storeScreenshots]
@@ -36,7 +16,6 @@ class ScreenshotSet {
     this.pixelDensity,
     this.theme,
     this.captureDelay,
-    this.decorator,
     required this.storeScreenshots,
   });
 
@@ -72,14 +51,6 @@ class ScreenshotSet {
   /// Useful when screens contain animations or images (e.g. from
   /// `cached_network_image`) that play a fade-in on first render.
   final Duration? captureDelay;
-
-  /// Optional decorator applied to every screenshot in this set.
-  ///
-  /// When set, the decorator is responsible for the full canvas layout:
-  /// it receives the raw [WidgetBuilder] for the app content and should
-  /// embed it inside a device frame so the frame can inject the correct
-  /// inner [MediaQuery]. See [ScreenshotDecorator] for details.
-  final ScreenshotDecorator? decorator;
 
   /// The screenshots that belong to this set.
   final List<StoreScreenshot> storeScreenshots;

@@ -7,15 +7,12 @@ import 'package:flutter/material.dart';
 class StoreScreenshot {
   const StoreScreenshot({
     this.name,
-    this.titleBuilder,
-    this.subtitleBuilder,
     this.locale,
     this.targetPlatform,
     this.size,
     this.pixelDensity,
     this.theme,
     this.captureDelay,
-    this.showBackButton = false,
     required this.builder,
   });
 
@@ -23,16 +20,6 @@ class StoreScreenshot {
   /// (e.g. `'login'` → `01_login.png`). When absent the file is named by
   /// index only (e.g. `01.png`).
   final String? name;
-
-  /// Optional builder that returns a localized marketing title for use by
-  /// the [ScreenshotDecorator]. Called with the decorator's [BuildContext],
-  /// which already has the correct [Localizations] for the screenshot's
-  /// locale, so `AppLocalizations.of(ctx)` returns the right language.
-  final String? Function(BuildContext)? titleBuilder;
-
-  /// Optional builder that returns a localized marketing subtitle for use by
-  /// the [ScreenshotDecorator]. Same locale semantics as [titleBuilder].
-  final String? Function(BuildContext)? subtitleBuilder;
 
   /// The locale for this screenshot. Overrides the parent set's locale and
   /// the app-level selected locale when set.
@@ -65,16 +52,27 @@ class StoreScreenshot {
   /// shows the fully-loaded state.
   final Duration? captureDelay;
 
-  /// Whether to allow the rendered screen to show a back button.
+  /// Builder for the **full screenshot canvas**.
   ///
-  /// By default (`false`) the content is wrapped in a fresh [Navigator] so
-  /// the screen always appears as the root route — no back button is shown
-  /// in the [AppBar], regardless of the surrounding navigation stack.
+  /// The [BuildContext] provided to this builder has the correct [Theme],
+  /// [Locale] (via [Localizations.override]), and [MediaQuery] (canvas size)
+  /// already set up by the framework, so `AppLocalizations.of(ctx)` returns
+  /// the right language and `MediaQuery.sizeOf(ctx)` equals the canvas size.
   ///
-  /// Set to `true` when you intentionally want to capture a screen that
-  /// has a back button (e.g. a detail page that should show the ← icon).
-  final bool showBackButton;
-
-  /// Builder for the screenshot content.
+  /// Use [ScreenshotContent] inside this builder to embed one or more
+  /// isolated app screens. Wrap each [ScreenshotContent] in a [DeviceFrame]
+  /// from the `device_frame` package when you want a device mockup:
+  ///
+  /// ```dart
+  /// builder: (context) => Stack(
+  ///   children: [
+  ///     // background, text, any widgets ...
+  ///     DeviceFrame(
+  ///       device: Devices.ios.iPhone16ProMax,
+  ///       screen: ScreenshotContent(builder: (_) => HomeScreen()),
+  ///     ),
+  ///   ],
+  /// ),
+  /// ```
   final WidgetBuilder builder;
 }

@@ -11,8 +11,6 @@ class ScreenshotRender extends StatelessWidget {
     required this.size,
     required this.pixelDensity,
     required this.builder,
-    this.decorator,
-    this.showBackButton = false,
   });
 
   final Locale locale;
@@ -20,22 +18,12 @@ class ScreenshotRender extends StatelessWidget {
   final ThemeData? theme;
   final Size size;
   final double pixelDensity;
+
+  /// Builder for the full screenshot canvas. The [BuildContext] provided has
+  /// the correct [Theme], [Localizations], and [MediaQuery] (canvas size)
+  /// already set up. Use [ScreenshotContent] inside this builder to embed
+  /// isolated app screens.
   final WidgetBuilder builder;
-
-  /// Optional bound decorator — already has title/subtitle closed over.
-  /// When present, the decorator is responsible for the canvas layout and
-  /// for placing [builder] inside a frame that injects the correct inner
-  /// [MediaQuery]. The canvas-level [MediaQuery] (size = [size]) is still
-  /// applied before calling the decorator.
-  final Widget Function(BuildContext, WidgetBuilder)? decorator;
-
-  /// When false (the default), the content builder is wrapped in a fresh
-  /// [Navigator] so the screen always renders as the root route — preventing
-  /// unexpected back buttons in [AppBar] widgets.
-  ///
-  /// Set to true to opt out of the isolation and allow back buttons to appear
-  /// (e.g. when you intentionally capture a screen with a ← icon).
-  final bool showBackButton;
 
   ThemeData _resolveTheme() {
     if (theme != null && platform != null) {
@@ -50,19 +38,6 @@ class ScreenshotRender extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // When showBackButton is false, wrap the content in a fresh Navigator so
-    // the screen is always the root route and AppBar never shows a back button.
-    final isolatedBuilder = showBackButton
-        ? builder
-        : (BuildContext ctx) => Navigator(
-            onGenerateRoute: (settings) => PageRouteBuilder<void>(
-              settings: settings,
-              pageBuilder: (c, _, __) => Builder(builder: builder),
-              transitionDuration: Duration.zero,
-              reverseTransitionDuration: Duration.zero,
-            ),
-          );
-
     return Theme(
       data: _resolveTheme(),
       child: MediaQuery(
@@ -83,9 +58,7 @@ class ScreenshotRender extends StatelessWidget {
             child: SizedBox(
               width: size.width,
               height: size.height,
-              child: decorator != null
-                  ? Builder(builder: (ctx) => decorator!(ctx, isolatedBuilder))
-                  : Builder(builder: isolatedBuilder),
+              child: Builder(builder: builder),
             ),
           ),
         ),

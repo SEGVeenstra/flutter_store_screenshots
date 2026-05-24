@@ -7,8 +7,7 @@ import '../models/screenshot_set.dart';
 ///
 /// Each named constructor pre-fills the correct canvas [size], [pixelDensity],
 /// and [targetPlatform] for its store format. Only [storeScreenshots] is
-/// required; [decorator] is optional and can be provided using the built-in
-/// [framedDecorator] or [featureGraphicDecorator] helpers.
+/// required.
 ///
 /// ## Example
 /// ```dart
@@ -16,13 +15,16 @@ import '../models/screenshot_set.dart';
 /// import 'package:flutter_store_screenshots/flutter_store_screenshots.dart';
 ///
 /// AndroidScreenshotSet.phone(
-///   decorator: framedDecorator(
-///     device: Devices.android.samsungGalaxyS25,
-///     gradient: LinearGradient(
-///       colors: [Color(0xFF1B5E20), Color(0xFF66BB6A)],
+///   storeScreenshots: [
+///     StoreScreenshot(
+///       name: 'home',
+///       builder: framedCanvas(
+///         device: Devices.android.samsungGalaxyS25,
+///         child: (_) => HomeScreen(),
+///         title: (ctx) => AppLocalizations.of(ctx).homeTitle,
+///       ),
 ///     ),
-///   ),
-///   storeScreenshots: _myScreenshots(),
+///   ],
 /// )
 /// ```
 class AndroidScreenshotSet extends ScreenshotSet {
@@ -30,7 +32,6 @@ class AndroidScreenshotSet extends ScreenshotSet {
   ///
   /// Canvas: 412 × 892 logical px · 2.625× density → **≈1081 × 2341** physical px.
   AndroidScreenshotSet.phone({
-    super.decorator,
     super.captureDelay,
     required super.storeScreenshots,
   }) : super(
@@ -44,7 +45,6 @@ class AndroidScreenshotSet extends ScreenshotSet {
   ///
   /// Canvas: 600 × 960 logical px · 2× density → **1200 × 1920** physical px.
   AndroidScreenshotSet.tablet7({
-    super.decorator,
     super.captureDelay,
     required super.storeScreenshots,
   }) : super(
@@ -58,7 +58,6 @@ class AndroidScreenshotSet extends ScreenshotSet {
   ///
   /// Canvas: 800 × 1280 logical px · 2× density → **1600 × 2560** physical px.
   AndroidScreenshotSet.tablet10({
-    super.decorator,
     super.captureDelay,
     required super.storeScreenshots,
   }) : super(
@@ -72,22 +71,22 @@ class AndroidScreenshotSet extends ScreenshotSet {
   ///
   /// Canvas: 1024 × 500 logical px · 1× density → **1024 × 500** physical px.
   ///
-  /// Use with [featureGraphicDecorator] for a ready-made branding layout:
+  /// Use with [featureGraphicCanvas] for a ready-made branding layout:
   /// ```dart
   /// AndroidScreenshotSet.featureGraphic(
-  ///   decorator: featureGraphicDecorator(),
   ///   storeScreenshots: [
   ///     StoreScreenshot(
   ///       name: 'feature_graphic',
-  ///       titleBuilder: (ctx) => AppLocalizations.of(ctx).featureTitle,
-  ///       subtitleBuilder: (ctx) => AppLocalizations.of(ctx).featureSubtitle,
-  ///       builder: (_) => const HomeScreen(),
+  ///       builder: featureGraphicCanvas(
+  ///         child: (_) => const HomeScreen(),
+  ///         title: (ctx) => AppLocalizations.of(ctx).featureTitle,
+  ///         subtitle: (ctx) => AppLocalizations.of(ctx).featureSubtitle,
+  ///       ),
   ///     ),
   ///   ],
   /// )
   /// ```
   AndroidScreenshotSet.featureGraphic({
-    super.decorator,
     super.captureDelay,
     required super.storeScreenshots,
   }) : super(

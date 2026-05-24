@@ -226,22 +226,9 @@ class _ScreenshotsHomeState extends State<_ScreenshotsHome> {
     final resolvedPixelDensity =
         screenshot.pixelDensity ?? set.pixelDensity ?? 1.0;
     final resolvedTheme = screenshot.theme ?? set.theme ?? widget.appTheme;
-    final resolvedShowBackButton = screenshot.showBackButton;
 
     final previewWidth =
         previewHeight * (resolvedSize!.width / resolvedSize.height);
-
-    // Bind the set-level decorator with this screenshot's builder callbacks
-    // so ScreenshotRender only needs a simple (BuildContext, WidgetBuilder) fn.
-    final rawDecorator = set.decorator;
-    final boundDecorator = rawDecorator == null
-        ? null
-        : (BuildContext ctx, WidgetBuilder cb) => rawDecorator(
-            ctx,
-            cb,
-            screenshot.titleBuilder,
-            screenshot.subtitleBuilder,
-          );
 
     return Column(
       children: [
@@ -257,8 +244,6 @@ class _ScreenshotsHomeState extends State<_ScreenshotsHome> {
               size: resolvedSize,
               pixelDensity: resolvedPixelDensity,
               builder: screenshot.builder,
-              decorator: boundDecorator,
-              showBackButton: resolvedShowBackButton,
             ),
           ),
         ),
@@ -292,9 +277,6 @@ class _ScreenshotsHomeState extends State<_ScreenshotsHome> {
     ThemeData? captureTheme;
     WidgetBuilder captureBuilder =
         widget.screenshotSets.first.storeScreenshots.first.builder;
-    Widget Function(BuildContext, WidgetBuilder)? captureDecorator;
-    var captureShowBackButton =
-        widget.screenshotSets.first.storeScreenshots.first.showBackButton;
 
     final captureKey = GlobalKey();
     final progressNotifier = ValueNotifier<String>('0 / $total');
@@ -332,8 +314,6 @@ class _ScreenshotsHomeState extends State<_ScreenshotsHome> {
                           size: captureSize,
                           pixelDensity: capturePixelDensity,
                           builder: captureBuilder,
-                          decorator: captureDecorator,
-                          showBackButton: captureShowBackButton,
                         ),
                       ),
                     ),
@@ -377,16 +357,6 @@ class _ScreenshotsHomeState extends State<_ScreenshotsHome> {
             final resolvedTheme =
                 screenshot.theme ?? set.theme ?? widget.appTheme;
 
-            final rawDecorator = set.decorator;
-            final boundDecorator = rawDecorator == null
-                ? null
-                : (BuildContext ctx, WidgetBuilder cb) => rawDecorator(
-                    ctx,
-                    cb,
-                    screenshot.titleBuilder,
-                    screenshot.subtitleBuilder,
-                  );
-
             // Update the dialog to render this screenshot.
             setDialogState(() {
               captureLocale = resolvedLocale;
@@ -395,8 +365,6 @@ class _ScreenshotsHomeState extends State<_ScreenshotsHome> {
               capturePlatform = resolvedPlatform;
               captureTheme = resolvedTheme;
               captureBuilder = screenshot.builder;
-              captureDecorator = boundDecorator;
-              captureShowBackButton = screenshot.showBackButton;
             });
 
             // Wait for the new content to be fully rendered.
