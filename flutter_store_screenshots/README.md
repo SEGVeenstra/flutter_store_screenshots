@@ -1,6 +1,6 @@
 # Flutter Store Screenshots
 
-![Flutter Store Screenshots preview](docs/preview.png)
+![Flutter Store Screenshots preview](doc/preview.png)
 
 A Flutter tool for **composing, previewing, and exporting App Store & Google Play screenshots** — all from a single Dart entry point, with full localisation support, device frames, and one-click bulk export.
 
