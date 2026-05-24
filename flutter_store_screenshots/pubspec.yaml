@@ -1,6 +1,6 @@
 name: flutter_store_screenshots
 description: "Harness your Flutter skills to create stunning screenshots for your app store listings. This package provides a collection of tools and utilities to help you capture high-quality screenshots of your Flutter applications, making it easier than ever to showcase your app's features and design in the app stores."
-version: 0.1.0
+version: 0.2.0
 homepage: https://github.com/SEGVeenstra/flutter_store_screenshots
 repository: https://github.com/SEGVeenstra/flutter_store_screenshots
 issue_tracker: https://github.com/SEGVeenstra/flutter_store_screenshots/issues

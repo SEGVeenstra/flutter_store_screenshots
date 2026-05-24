@@ -1,3 +1,7 @@
+## 0.2.0
+
+* docs: improve the README
+
 ## 0.1.0
 
 * Initial release.
