@@ -444,7 +444,11 @@ void main() {
                       gradient: LinearGradient(
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
-                        colors: [Color(0xFF1A237E), Color(0xFF1565C0), Color(0xFF42A5F5)],
+                        colors: [
+                          Color(0xFF1A237E),
+                          Color(0xFF1565C0),
+                          Color(0xFF42A5F5),
+                        ],
                       ),
                     ),
                   ),
